@@ -24,7 +24,7 @@
 	<div class="wrapper">
 		<header class="main-header">
 			<!-- Logo -->
-			 <a href="index2.html" class="logo">
+			 <a href="<?php  echo $this->baseUrl(); ?>/backoffice" class="logo">
 				<span class="logo-mini"><b>K</b>C</span>
 				<span class="logo-lg"><b>KONNECTY</b>CMS</span>
 			 </a> <!-- logo -->
@@ -55,7 +55,7 @@
 								<!-- Menu Footer-->
 								<li class="user-footer">
 									<div class="pull-left">
-									  <a href="<?php echo $this->baseUrl(); ?>/backoffice/index/changepassword?id_user=<?php echo $this->user['id_user']; ?>" class="btn btn-default btn-flat">Change password</a>
+									  <a href="<?php echo $this->baseUrl(); ?>/backoffice/users/changepassword" class="btn btn-default btn-flat">Change password</a>
 									</div>
 									<div class="pull-right">
 									  <a href="<?php echo $this->baseUrl(); ?>/backoffice/auth/logout" class="btn btn-default btn-flat">Sign out</a>
@@ -103,8 +103,8 @@
 					<li class="treeview <?php if(isset($this->activeMenuItem) && $this->activeMenuItem == 'themes' ) echo 'active'; ?>">
 	          <a href="#"><i class="fa fa-television"></i> <span>Themes</span><span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
 	          <ul class="treeview-menu">
-	            <li><a href=""><i class="fa fa-circle-o text-red"></i> Theme categories</a></li>
-							<li><a href=""><i class="fa fa-circle-o text-green"></i> Create a theme category</a></li>
+	            <li><a href="<?php echo $this->baseUrl(); ?>/backoffice/themes/categories"><i class="fa fa-circle-o text-red"></i> Theme categories</a></li>
+							<li><a href="<?php echo $this->baseUrl(); ?>/backoffice/themes/createcategory"><i class="fa fa-circle-o text-green"></i> Create a theme category</a></li>
 							<li><a href=""><i class="fa fa-circle-o text-aqua"></i> Themes</a></li>
 							<li><a href=""><i class="fa fa-circle-o text-yellow"></i> Upload a theme</a></li>
 	          </ul>

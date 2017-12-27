@@ -1,0 +1,47 @@
+
+<?php if(isset($this->message)) echo '<div class="row"><div class="col-lg-12">'.$this->message.'</div></div>'; ?>
+
+<div class="row">
+	<div class="col-sm-12">
+		<div class="box box-info">
+			<div class="box-body" >
+				<form role="form" action="" method="post">
+					<div class="form-group col-xs-6">
+						<label for="grade">Category Name</label>
+						<input type="text" class="form-control" name="category" id="category" placeholder="Category" value="<?php if(isset($this->frmData['category'])) echo $this->frmData['category']; ?>" >
+						<p class="info _red"><?php if(isset($this->errors['category'])) echo $this->errors['category']; ?></p>
+					</div>
+					<div class="form-group col-xs-6">
+						<label for="exampleInputPassword1">Parent Category</label>
+						<select name="id_parent_category" id="id_parent_category" class="form-control" >
+							<option value="0">No parent category ( This is a root category) </option>
+							<?php
+							 if(isset($this->categoryselectEntries) && $this->categoryselectEntries) echo $this->categoryselectEntries;
+							?>
+						</select>
+						<p class="info _red"><?php if(isset($this->errors['id_parent_category'])) echo $this->errors['id_parent_category']; ?></p>
+					</div>
+					<div style="clear:both;"></div>
+					<div class="form-group col-xs-6">
+						<label for="description">Description</label>
+						<textarea name="description" id="description" class="form-control" placeholder="Add description if any"><?php if(isset($this->frmData['description'])) echo $this->frmData['description']; ?></textarea>
+						<p class="info _red"><?php if(isset($this->errors['description'])) echo $this->errors['description']; ?></p>
+					</div>
+
+					<div class="hr-line-dashed" style="clear:both;" ></div>
+					<div class="form-group">
+						<div class="col-sm-8 ">
+							<button type="submit" class="btn btn-primary"><?php if(isset($this->edit) && $this->edit) echo 'Update Category'; else echo 'Create Category'; ?></button>
+						</div>
+					</div>
+					<?php
+					if(isset($this->edit) && $this->edit) {
+						echo '<input type="hidden" name="id_to_edit" value="'.$this->edit['id_category'].'" />';
+					}
+					?>
+				</form>
+			</div><!-- panel-body -->
+
+		</div><!-- 	hpanel -->
+	</div><!-- col-sm-9 -->
+</div><!-- row -->
