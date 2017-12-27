@@ -1,0 +1,59 @@
+
+<?php if(isset($this->errorType) && $this->errorType == 404) : ?>
+
+	<!-- Main content -->
+	<section class="content">
+	 
+		<div class="error-page">
+			<h2 class="headline text-info"> 404</h2>
+			<div class="error-content">
+				<h3><i class="fa fa-warning text-yellow"></i> Oops! Page not found.</h3>
+				<p>
+					We could not find the page you were looking for. 
+					Meanwhile, you may <a href="<?php echo $this->baseUrl(); ?>">return to dashboard</a> or try using the search form.
+				</p>				
+			</div><!-- /.error-content -->
+		</div><!-- /.error-page -->
+
+	</section><!-- /.content -->
+
+<?php elseif(isset($this->errorType) && $this->errorType == 500) : ?>
+	
+	<!-- Main content -->
+	<section class="content">
+	 
+		<div class="error-page">
+			<h2 class="headline">500</h2>
+			<div class="error-content">
+				<h3><i class="fa fa-warning text-yellow"></i> Oops! Something went wrong.</h3>
+				<p>
+					We will work on fixing that right away. 
+					Meanwhile, you may <a href="<?php echo $this->baseUrl(); ?>">return to dashboard</a> or try using the search form.
+				</p>				
+			</div>
+		</div><!-- /.error-page -->
+
+	</section><!-- /.content -->
+
+<?php else : ?> 
+	<h1>An error occurred</h1>
+    <h2><?php echo $this->message ?></h2>
+<?php endif; ?>
+
+<?php if (isset($this->exception)): ?>
+  
+  <h3>Exception information:</h3>
+  <p>
+      <b>Message:</b> <?php echo $this->exception->getMessage() ?>
+  </p>
+
+  <h3>Stack trace:</h3>
+  <pre><?php echo $this->exception->getTraceAsString() ?>
+  </pre>
+
+  <h3>Request Parameters:</h3>
+  <pre><?php echo $this->escape(var_export($this->request->getParams(), true)) ?>
+  </pre>
+
+<?php endif ?>
+

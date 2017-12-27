@@ -1,0 +1,78 @@
+
+<div class="row">
+
+<?php
+if(isset($this->message) && $this->message) {
+	echo '<div class="col-md-12">';
+		echo $this->message;
+	echo '</div>';
+}
+?>
+
+	<!-- main column -->
+	<div class="col-md-12">
+	
+		<div class="box box-info">
+			<div class="box-header">
+				<h3 class="box-title"></h3>
+			</div><!-- /.box-header -->
+			
+			<!-- form start -->
+			<form role="form" method="post">
+				<div class="box-body">
+
+                    <div class="form-group " > 
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">Configuration </label>
+                        <div class="col-sm-9"  >
+                            <input type="text" class="form-control" name="configuration" id="configuration" placeholder="Configuration" value="<?php if(isset($this->frmData['configuration'])) echo $this->frmData['configuration']; ?>" />
+                            <?php if(isset($this->errors['configuration'])){ ?> 
+                                <label class="col-sm-12 control-label" style="padding-left:0; padding-right:0;" for="inputError"><i class="fa fa-times-circle-o"></i> <?php echo '<span class="text-red">'.$this->errors['configuration'].'</span>'; ?></label>
+                            <?php } ?>
+                        </div>	
+                        <div style="clear: both"></div>
+                    </div>
+                    
+                    <div class="form-group " > 
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">Value </label>
+                        <div class="col-sm-9"  >
+                             <input type="text" class="form-control" name="value" id="value" placeholder="Value" value="<?php if(isset($this->frmData['value'])) echo $this->frmData['value']; ?>" />
+                            <?php if(isset($this->errors['value'])){ ?> 
+                                <label class="col-sm-12 control-label" style="padding-left:0; padding-right:0;" for="inputError"><i class="fa fa-times-circle-o"></i> <?php echo '<span class="text-red">'.$this->errors['value'].'</span>'; ?></label>
+                            <?php } ?>
+                        </div>	
+                        <div style="clear: both"></div>
+                    </div>
+                    
+                    <div class="form-group " > 
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">Comments </label>
+                        <div class="col-sm-9"  >
+							<textarea name="comments" id="comments" class="form-control"  placeholder="Comments" ><?php if(isset($this->frmData['comments']) && $this->frmData['comments']) echo $this->frmData['comments']; ?></textarea>
+                            <?php if(isset($this->errors['comments'])){ ?> 
+                                <label class="col-sm-12 control-label" style="padding-left:0; padding-right:0;" for="inputError"><i class="fa fa-times-circle-o"></i> <?php echo '<span class="text-red">'.$this->errors['comments'].'</span>'; ?></label>
+                            <?php } ?>
+                        </div>	
+                        <div style="clear: both"></div>
+                    </div> 
+                    
+                   
+
+                    <?php
+						if(isset($this->edit) && $this->edit) {
+							echo '<input type="hidden" name="id_to_edit" value="'.$this->edit['id_configuration'].'" />';
+						}
+					?>
+      
+				</div><!-- /.box-body -->
+
+				<div class="box-footer">
+					<button type="submit" class="btn btn-primary"><?php if(isset($this->edit) && $this->edit) echo 'Update'; else echo 'Create'; ?></button>
+				</div>
+			</form>
+		</div><!-- /.box -->
+
+	</div><!--/.col (main) -->
+    
+</div><!-- /.row -->
+
+
+

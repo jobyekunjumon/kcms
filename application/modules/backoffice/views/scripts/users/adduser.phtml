@@ -1,0 +1,132 @@
+
+<?php
+$stausLabels = array(0 => 'Disabled' , '1' => 'Enabled');
+$userTypes = array('super_admin'=>'Super admin', 'admin'=>'Admin', 'manager' => 'Manager', 'theme_developer' => 'Theme Developer','conetnt_curator' => 'Content Curator');
+?>
+<div class="row">
+
+<?php
+if(isset($this->message) && $this->message) {
+	echo '<div class="col-md-12">';
+		echo $this->message;
+	echo '</div>';
+}
+?>
+
+	<!-- main column -->
+	<div class="col-md-12">
+
+		<div class="box box-info">
+			<div class="box-header">
+				<h3 class="box-title"></h3>
+			</div><!-- /.box-header -->
+
+			<!-- form start -->
+			<form role="form" method="post">
+				<div class="box-body">
+                    <div class="form-group " >
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">Name </label>
+                        <div class="col-sm-9"  >
+                            <input type="text" class="form-control" name="name" id="name" placeholder="Name" value="<?php if(isset($this->frmData['name'])) echo $this->frmData['name']; ?>" />
+                            <?php if(isset($this->errors['name'])){ ?>
+                                <label class="col-sm-12 control-label" style="padding-left:0; padding-right:0;" for="inputError"><i class="fa fa-times-circle-o"></i> <?php echo '<span class="text-red">'.$this->errors['name'].'</span>'; ?></label>
+                            <?php } ?>
+                        </div>
+                        <div style="clear: both"></div>
+                    </div>
+
+                    <div class="form-group " >
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">Email </label>
+                        <div class="col-sm-9"  >
+                            <input type="text" class="form-control" name="email" id="email" placeholder="Email" value="<?php if(isset($this->frmData['email'])) echo $this->frmData['email']; ?>" />
+                            <?php if(isset($this->errors['email'])){ ?>
+                                <label class="col-sm-12 control-label" style="padding-left:0; padding-right:0;" for="inputError"><i class="fa fa-times-circle-o"></i> <?php echo '<span class="text-red">'.$this->errors['email'].'</span>>'; ?></label>
+                            <?php } ?>
+                        </div>
+                        <div style="clear: both"></div>
+                    </div>
+
+                   <?php if(!isset($this->edit) && !$this->edit ) { ?>
+
+                    <div class="form-group " >
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">Password </label>
+                        <div class="col-sm-9"  >
+                            <input type="password" class="form-control" name="password" id="password" placeholder="Password" value="<?php if(isset($this->frmData['password'])) echo $this->frmData['password']; ?>" />
+                            <?php if(isset($this->errors['password'])){ ?>
+                                <label class="col-sm-12 control-label" style="padding-left:0; padding-right:0;" for="inputError"><i class="fa fa-times-circle-o"></i> <?php echo '<span class="text-red">'.$this->errors['password'].'</span>'; ?></label>
+                            <?php } ?>
+                        </div>
+                        <div style="clear: both"></div>
+                    </div>
+                    <div class="form-group " >
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">Confirm Password  </label>
+                        <div class="col-sm-9"  >
+                            <input type="password" class="form-control" name="cpassword" id="cpassword" placeholder="Confirm Password " value="<?php if(isset($this->frmData['cpassword'])) echo $this->frmData['cpassword']; ?>" />
+                            <?php if(isset($this->errors['cpassword'])){ ?>
+                                <label class="col-sm-12 control-label" style="padding-left:0; padding-right:0;" for="inputError"><i class="fa fa-times-circle-o"></i> <?php echo '<span class="text-red">'.$this->errors['cpassword'].'</span>'; ?></label>
+                            <?php } ?>
+                        </div>
+                        <div style="clear: both"></div>
+                    </div>
+
+                    <?php } ?>
+
+                    <div class="form-group "  >
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">User Type </label>
+                        <div class="col-sm-9"  >
+                            <select class="form-control" name="utype" id="utype">
+                                <option value="">-- Select User Type --</option>
+                                <?php
+									foreach($userTypes as $key => $value) {
+										echo '<option value="'.$key.'"';
+										if(isset($this->frmData['utype']) && $this->frmData['utype'] == $key) echo 'selected="selected"';
+										echo ' >'.$value.'</option>';
+									}
+								?>
+                            </select>
+							<?php if(isset($this->errors['utype'])) echo '<span class="text-red">'.$this->errors['utype'].'</span>'; ?>
+                        </div>
+                        <div style="clear: both"></div>
+                    </div>
+
+                    <?php if(isset($this->edit) && $this->edit ) { ?>
+                    <div class="form-group "  >
+                        <label class="col-sm-3 control-label" style="padding-left:0; padding-right:0;" for="type">Status</label>
+                        <div class="col-sm-9"  >
+                            <select class="form-control" name="admin_user_status" id="admin_user_status">
+                            	<option value="">Select Status</option>
+                                <?php
+									 if(isset($stausLabels) && $stausLabels) {
+										 foreach($stausLabels as $key=>$value) {
+											 echo '<option value="'.$key.'" ';
+												if(isset($this->frmData['admin_user_status']) && $this->frmData['admin_user_status'] == $key) echo 'selected="selected"';
+											 echo '>'.$value.'</option>';
+										 }
+									 }
+								?>
+                            </select>
+                        	<?php if(isset($this->errors['admin_user_status'])) echo '<span class="text-red">'.$this->errors['admin_user_status'].'</span>'; ?>
+                        </div>
+                        <div style="clear: both"></div>
+                    </div>
+
+                    <?php } ?>
+
+					<div style="clear:both;"></div>
+                    <?php
+						if(isset($this->edit) && $this->edit) {
+							echo '<input type="hidden" name="id_to_edit" value="'.$this->edit['id_user'].'" />';
+						}
+					?>
+
+				</div><!-- /.box-body -->
+
+				<div class="box-footer">
+					<button type="submit" class="btn btn-primary"><?php if(isset($this->edit) && $this->edit) echo 'Update'; else echo 'Create'; ?></button>
+				</div>
+			</form>
+		</div><!-- /.box -->
+
+	</div><!--/.col (main) -->
+
+</div><!-- /.row -->

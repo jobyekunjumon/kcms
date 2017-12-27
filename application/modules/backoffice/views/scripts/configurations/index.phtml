@@ -1,0 +1,53 @@
+<div class="row">
+	<?php
+	if(isset($message) && $message) {
+		echo '<div class="col-md-12">';echo $message;echo '</div>';
+	}
+
+	?>
+	<div class="col-md-12">
+		<div class="box box-warning">
+			<div class="box-header">
+			</div><!-- /.box-header -->
+			<div class="box-body table-responsive">
+				<table class="table table-striped table-bordered">
+					<thead>
+						<tr>
+							<th>Configuration</th>
+							<th>Value</th>
+							<th>Comments</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php
+						if(isset($this->configs) && $this->configs) {
+							foreach($this->configs as $entry) {
+								echo '<tr>';
+								echo '<td class="center">'.$entry['configuration'].'</td>';
+								echo '<td class="center">'.$entry['value'].'</td>';
+								echo '<td class="center">'.$entry['comments'].'</td>';
+
+								echo '<td class="center">
+								<a title="Edit" class="btn-sm btn-primary" href="'.$this->baseUrl().'/backoffice/configurations/addconfig?edit='.$entry['id_configuration'].'"  ><i class="fa fa-edit"></i></a>
+								</td>';
+								echo '</tr>';
+							}
+						}	else {
+							echo '<tr>';
+							echo '<td class="center" colspan="4">Sorry!! No data found</td>';
+							echo '</tr>';
+						}
+						?>
+
+					</tbody>
+				</table>
+				<br/>
+				<?php  if(isset($this->pagination) && $this->pagination) echo $this->pagination;  ?>
+				<br>
+				<a href="<?php echo $this->baseUrl(); ?>/backoffice/configurations/addconfig" type="button" class="btn btn-warning btn-sm"><i class="fa fa-plus"></i> Add Configuration</a>
+			</div>
+		</div>
+	</div><!--/span-->
+
+</div>

@@ -1,0 +1,68 @@
+<?php
+    if (isset($this->message) && $this->message) {
+        echo '<div class="col-md-12">';
+        echo $this->message;
+        echo '</div>';
+    }
+	if (isset($this->users) && $this->users) {
+    $statusLabels = array(0 => 'Disabled', 1 => 'Active');
+	$statusLabelClass = array(0 => 'badge bg-red', 1 => 'badge bg-green');
+	if($this->users['utype']==1) $role = "Super admin";
+	if($this->users['utype']==2) $role = "Admin";
+	if($this->users['utype']==3) $role = "Normal user";
+	
+	
+?>
+
+    <div class="col-md-12">
+        <div class="box box-success">
+            <div class="box-header">
+                <?php /*?><h3 class="box-title"><?php echo $this->users['name']; ?></h3> <?php */?>                                   
+            </div><!-- /.box-header -->
+
+            <div class="box-body table-responsive">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="15%">Name</th>
+                        <td colspan="35%"><?php echo stripslashes($this->users['name']); ?></td>
+                    </tr>
+                    <tr>
+                         <th width="15%">Company Address</th>
+                        <td colspan="35%"><?php echo stripslashes($this->users['company_address']); ?></td>
+                    </tr>
+                    <tr>
+                        <th width="15%">Email</th>
+                        <td colspan="35%"><?php echo stripslashes($this->users['email']); ?></td>
+                    </tr>
+                    <tr>
+                        <th width="15%">Date Joined </th>
+                        <td colspan="35%"><?php echo stripslashes($this->users['date_joined']); ?></td>
+                    </tr>
+                    <tr>
+                        <th width="15%">User Type</th>
+                        <td colspan="35%"><?php echo stripslashes($role); ?></td>
+                    </tr>
+                    <tr>
+                        <th width="15%">Last Login Date</th>
+                        <td colspan="35%"><?php echo stripslashes($this->users['last_login']); ?></td>
+                    </tr>
+                    <?php /*?><?php if(isset($this->users['managed_by']) && ($this->users['managed_by'])) {?>
+                    <tr>                       
+                        <th width="15%">Managed By</th>
+                        <td colspan="35%"><?php echo stripslashes($this->manager['name']); ?></td>
+                    </tr>
+                    <?php }?><?php */?>
+                    <tr>    
+                        <th width="15%">Status</th>
+                        <td colspan="35%"><?php echo '<span class="' . $statusLabelClass[$this->users['status']] . '">' . $statusLabels[$this->users['status']] . '</span>'; ?></td>
+                    </tr>
+                </table>
+                <?php
+                } else {
+                    echo '<h3 class="center">No entries added yet</h3>';
+                }
+                ?>
+            </div>
+        </div>
+    </div>
+
