@@ -9,6 +9,7 @@ class IndexController extends Zend_Controller_Action {
     date_default_timezone_set("Asia/Kolkata");
 
   }
+  
   public function indexAction(){
 
   }

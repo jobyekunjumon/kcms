@@ -1,0 +1,10 @@
+<?php
+$themeFile = $this->themeDir.'/'.$this->activePage['template'].'.phtml';
+$pageContent = file_get_contents($themeFile);
+if(isset($this->content) && $this->content) {
+	foreach($this->content as $contentKey => $content ) {
+		$pageContent = str_replace($contentKey,$content,$pageContent);
+	}
+}
+echo $pageContent;
+?>
