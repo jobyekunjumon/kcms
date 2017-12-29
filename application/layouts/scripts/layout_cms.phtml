@@ -1,9 +1,9 @@
 <?php
-$themeFile = $this->themeDir.'/'.$this->activePage['template'].'.phtml';
-$pageContent = file_get_contents($themeFile);
-if(isset($this->content) && $this->content) {
-	foreach($this->content as $contentKey => $content ) {
-		$pageContent = str_replace($contentKey,$content,$pageContent);
+
+$pageContent = file_get_contents($this->theme['layout_file']);
+if(isset($this->contents) && $this->contents) {
+	foreach($this->contents as $content ) {
+		$pageContent = str_replace($content['component_id'],$content['content'],$pageContent);
 	}
 }
 echo $pageContent;
