@@ -33,7 +33,7 @@ footer{
   padding-top: 50px;
   padding-bottom: 50px;
 }
-section{
-  padding-top: 50px;
-  padding-bottom: 50px;
+section.spacer{
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
