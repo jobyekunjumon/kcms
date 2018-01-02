@@ -1,7 +1,7 @@
 <?php
 
 @$pageContent = file_get_contents($this->theme['layout_file']);
-if(!$pageContent) exit('Something went wrong while fetching aite data. Please try again later.');
+if(!$pageContent) exit('Something went wrong while fetching site data. Please try again later.');
 // assign addon css and scripts
 $addOnCss = '<link rel="stylesheet" href="'.$this->baseUrl().'/themes/'.$this->theme['theme_slug'].'/css/style.css">';
 $addOnJs = '';
@@ -15,12 +15,13 @@ if(isset($this->contents) && $this->contents) {
 }
 
 // remove all not rendered place holders
-preg_match_all('/@(.*);/', $pageContent, $notRenderedPlaceHolders);
-if (isset($notRenderedPlaceHolders[0]) && $notRenderedPlaceHolders[0]) {
-	foreach ($notRenderedPlaceHolders[0] as $placeHolder) {
-		$pageContent = str_replace($placeHolder,'',$pageContent);
+if(!isset($_GET['debug'])) {
+	preg_match_all('/@(.*);/', $pageContent, $notRenderedPlaceHolders);
+	if (isset($notRenderedPlaceHolders[0]) && $notRenderedPlaceHolders[0]) {
+		foreach ($notRenderedPlaceHolders[0] as $placeHolder) {
+			$pageContent = str_replace($placeHolder,'',$pageContent);
+		}
 	}
 }
-
 echo $pageContent;
 ?>

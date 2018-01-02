@@ -54,15 +54,14 @@ class SitesController extends Zend_Controller_Action {
     $theme['layout_file'] = $theme['directory'].'/'.$theme['page_layout'].'.phtml';
 
 
-    // get contents
+    ///////////////////////////////////////////////////////////////////////////////////
+    //                          GET  CONTENTS                                        //
+    ///////////////////////////////////////////////////////////////////////////////////
+
     $modelContents = new Application_Model_DbTable_Composer();
     $modelContents->setTableName('contents');
     $modelContents->setIdColumn('id_content');
     $contents = $modelContents->getAll(' WHERE `id_site` = '.$site['id_site'].' AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0)');
-
-    //////////////////////////////////////////
-    //             GET OTHER CONTENTS       //
-    //////////////////////////////////////////
 
     // get sliders
     $modelSliders = new Application_Model_DbTable_Composer();
@@ -156,6 +155,39 @@ class SitesController extends Zend_Controller_Action {
 
     }
 
+    // get media
+    $modelMedia = new Application_Model_DbTable_Media();
+    $sqlGetSiteMedia = 'SELECT sm.`component_id`, sm.`alt_text` as altered_alt_text, m.`id_media`, m.`file_name`, m.`file_type`,
+                               m.`file_extension`,m.`file_directory`, m.`file_url`, m.`caption`, m.`alt_text`, sm.`media_size_width`, sm.`media_size_height`,sm.`thumbnail`
+                               FROM `site_media` sm, `media` m
+                               WHERE m.`id_media` = sm.`id_media` AND sm.`id_site` = '.$site['id_site'].' AND (sm.`id_page` = '.$page['id_page'].' OR sm.`id_page` = 0)
+                               AND sm.`site_media_status` = 1 AND m.`media_status` =1';
+    $siteMedia = $modelMedia->getAll('',$sqlGetSiteMedia);
+    if($siteMedia) {
+      foreach ($siteMedia as $media) {
+        $mediaContent = '';
+        if($media) {
+          $contentsCount = count($contents);
+          $contents[$contentsCount]['component_id'] = $media['component_id'];
+          $contents[$contentsCount]['component_type'] = 'image';
+          $contents[$contentsCount]['content'] = $this->_getImage($media);
+        }
+      }
+    }
+
+    // get forms
+    $modelForms = new Application_Model_DbTable_Composer();
+    $modelForms->setTableName('forms');
+    $modelForms->setIdColumn('id_form');
+    $forms = $modelForms->getAll(' WHERE `id_site` = '.$site['id_site'].' AND `form_status` = 1 AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0)');
+    if($forms) {
+      foreach($forms as $form) {
+        $contentsCount = count($contents);
+        $contents[$contentsCount]['component_id'] = $form['component_id'];
+        $contents[$contentsCount]['component_type'] = 'form';
+        $contents[$contentsCount]['content'] = $this->_getForm($form,'post','');
+      }
+    }
     //$this->utilities->debug($site);$this->utilities->debug($page);$this->utilities->debug($contents); exit();
 
     if(isset($site) && $site) $this->view->site = $site;
@@ -173,6 +205,100 @@ class SitesController extends Zend_Controller_Action {
   //////////////////////////////////////////////////////////
   /////////  HELPER FUNCTION //////////////////////////////
   /////////////////////////////////////////////////////////
+  function _getForm($form,$method,$action) {
+    $out = '';
+    $modelFormElements = new Application_Model_DbTable_Composer();
+    $modelFormElements->setTableName('form_elements');
+    $modelFormElements->setIdColumn('id_form_element');
+    $formElements = $modelFormElements->getAll(' WHERE `id_form` = "'.$form['id_form'].'" AND `element_status` = 1');
+    if($formElements) {
+      $out = '<form role="form" method="'.$method.'" action="'.$action.'" id="'.$form['id_form'].'">';
+      $out .= '<input type="hidden" name="id_form" value="'.$form['id_form'].'" />';
+      foreach($formElements as $formElement) {
+        $elementHtml = '';
+        switch ($formElement['element_type']) {
+          case 'text':
+              $elementHtml .= '<div class="form-group">';
+                $elementHtml .= '<label>'.$formElement['element_name'].'</label>';
+                $elementHtml .= '<input class="form-control '.$formElement['element_class'].'" type="text" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
+                if($formElement['placeholder']) $elementHtml .= 'placeholder="'.$formElement['placeholder'].'"';
+                if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
+                $elementHtml .= '/>';
+              $elementHtml .= '</div>';
+            break;
+            case 'text_area':
+                $elementHtml .= '<div class="form-group">';
+                  $elementHtml .= '<label>'.$formElement['element_name'].'</label>';
+                  $elementHtml .= '<textarea class="form-control '.$formElement['element_class'].'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
+                  $elementHtml .= 'placeholder="'.$formElement['placeholder'].'" >';
+                  if($formElement['default_value']) $elementHtml .= $formElement['default_value'];
+                  $elementHtml .= '</textarea>';
+                $elementHtml .= '</div>';
+              break;
+              case 'submit':
+                  $elementClass = 'btn-default';
+                  if($formElement['element_class']) $elementClass = $formElement['element_class'];
+                  $elementHtml .= '<div class="form-group">';
+                    $elementHtml .= '<input type="submit" class="btn '.$elementClass.'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
+                    if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
+                    $elementHtml .= '/>';
+                  $elementHtml .= '</div>';
+                break;
+                case 'button':
+                    $elementClass = 'btn-default';
+                    if($formElement['element_class']) $elementClass = $formElement['element_class'];
+                    $elementHtml .= '<div class="form-group">';
+                      $elementHtml .= '<input type="button" class="btn '.$elementClass.'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
+                      if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
+                      $elementHtml .= '/>';
+                    $elementHtml .= '</div>';
+                  break;
+          default:
+            # code...
+            break;
+        }
+
+        $out .= $elementHtml;
+      }
+      $out .= '</form>';
+    }
+
+    return $out;
+  }
+  function _getImage($media,$outputType='image',$maxHeight='',$maxWidth='') {
+
+    $serverUrl = $this->utilities->getServerUrl();
+    $defImageUrl = $serverUrl.'/'.$this->view->baseUrl().'/images/noimage.jpg';
+
+    $modelMedia = new Application_Model_DbTable_Media();
+    $get = $this->getRequest()->getQuery();
+
+    if(!$media) {
+      if($outputType == 'image') exit('<img src="'.$defImageUrl.'" >');
+      else exit($defImageUrl);
+    }
+
+    $mediaUrl = $this->utilities->getMediaUrl($media,1,$media['thumbnail']);
+
+    // if($media['media_size_width'] || $media['media_size_height'] ) {
+    //   $mediaUrl = $serverUrl.'/'.$this->view->baseUrl().'/mds/imageurl?file='.$mediaUrl.'&width='.$width.'&height='.$height;
+    //   if(isset($maxHeight) && $maxWidth) {
+    //     $mediaUrl = $serverUrl.'/news/backoffice/media/imageurl?file='.$mediaUrl.'&maxw='.$maxWidth.'&maxh='.$maxHeight;
+    //   }
+    // } else if(isset($maxHeight) && $maxWidth) {
+    //   $mediaUrl = $serverUrl.'/news/backoffice/media/imageurl?file='.$mediaUrl.'&maxw='.$maxWidth.'&maxh='.$maxHeight;
+    // }
+    if($outputType == 'url') return $mediaUrl;
+
+    // create image tag
+    $out = '<img src="'.$mediaUrl.'"';
+      if(isset($media['altered_alt_text'])) $out .= 'alt="'.$media['altered_alt_text'].'"';
+      else if(isset($media['alt_text'])) $out .= 'alt="'.$media['alt_text'].'"';
+      else if(isset($media['caption'])) $out .= 'alt="'.$media['caption'].'"';
+      else  $out .= 'alt="Image '.$media['id_media'].'"';
+    $out .=  ' />';
+    return $out;
+  }
 
   public function _getFooterMenuList($menUItems,$siteSlug) {
     $out = '';

@@ -1,0 +1,101 @@
+
+<?php if(isset($this->message)) echo '<div class="row"><div class="col-lg-12">'.$this->message.'</div></div>'; ?>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="box box-info">
+			<div class="box-body" style="paddin-top:2px;padding-bottom:2px;">
+				<form name="frmFilter" action=""  class="form-vertivcal" >
+					<div class="form-group col-sm-4">
+						<button type="button" class="btn btn-info" id="btn_add_media" ><i class="fa fa-plus"></i> Add New</button>
+					</div>
+					<div class="form-group col-sm-3">
+						<input class="form-control" type="text" name="file_name" id="file_name" placeholder="Media Name" value="<?php if(isset($this->frmData['file_name']) && $this->frmData['file_name']) echo $this->frmData['file_name']; ?>" >
+					</div>
+					<div class="form-group col-sm-2">
+						<input class="form-control date_picker" type="text" name="date_from" id="date_from" placeholder="Date From" value="<?php if(isset($this->frmData['date_from']) && $this->frmData['date_from']) echo $this->frmData['date_from']; ?>" >
+					</div>
+					<div class="form-group col-sm-2">
+						<input class="form-control date_picker" type="text" name="date_to" id="date_to" placeholder="Date To" value="<?php if(isset($this->frmData['date_to']) && $this->frmData['date_to']) echo $this->frmData['date_to']; ?>" >
+					</div>
+
+					<div class="form-group col-sm-1">
+						<button type="submit" class="btn btn-primary" >Filter</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row" id="upload_frm_cont" <?php if(!isset($_GET['upload'])) echo 'style="display:none;"'; ?>>
+	<div class="col-lg-12">
+		<div class="box box-warning">
+			<div class="box-header">
+				<h3 class="box-title">Upload Media</h3>
+				<div class="box-tools pull-right">
+          <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+        </div>
+			</div><!-- /.box-header -->
+
+			<div class="box-body" style="paddin-top:2px;padding-bottom:2px;">
+				<form name="frmUpload" action="" method="post"  class="form-vertivcal" enctype="multipart/form-data">
+					<div class="form-group col-sm-4">
+						<input type="file" name="media_file" id="media_file" placeholder="Media Name"  />
+					</div>
+					<div class="form-group col-sm-2">
+						<button type="submit" class="btn btn-sm btn-primary" >Upload</button>
+					</div>
+					<input type="hidden" name="frm" value="upload_media" />
+				</form>
+			</div>
+		</div><!-- hpanel -->
+	</div>
+</div><!-- row-->
+
+<div class="row">
+	<?php
+	if(isset($this->pagination) && $this->pagination) echo '<div class="col-sm-12">'.$this->pagination.'</div>';
+
+	if(isset($this->medias) && $this->medias) {
+		foreach($this->medias as $media) {
+			echo '<div class="col-sm-2">';
+				echo '<div class="box">';
+					echo '<div class="box-body" style="padding:0; height:150px;">';
+						echo '<img src="'.$media['file_directory'].'/'.$media['file_name'].'-smallsq.'.$media['file_extension'].'" width="100%" />';
+					echo '</div>';
+
+					echo '<div class="box-footer">';
+						echo '<a href="'.$this->baseUrl().'/backoffice/media/edit?id_media='.$media['id_media'].'"><i class="fa fa-edit"></i> Edit</a> &nbsp;';
+						echo '<a href="'.$this->baseUrl().'/backoffice/media/delete?id_media='.$media['id_media'].'" class="pull-right"><i class="fa fa-trash"></i> Delete</a>';
+
+					echo '</div>';
+				echo '</div>';
+			echo '</div>';
+		}
+	}
+
+	if(isset($this->pagination) && $this->pagination) echo '<div class="col-sm-12">'.$this->pagination.'</div>';
+	?>
+
+</div><!-- row -->
+
+<?php
+$this->addOnCss = '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_backoffice/vendor/bootstrap-datepicker-master/dist/css/bootstrap-datepicker3.min.css" />';
+$this->addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_backoffice/vendor/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" />';
+
+$this->addOnJs = '<script src="'.$this->baseUrl().'/ui_backoffice/vendor/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>';
+$this->addOnJs .= '<script src="'.$this->baseUrl().'/ui_backoffice/vendor/bootstrap-datepicker-master/dist/js/bootstrap-datepicker.min.js"></script>';
+$this->addOnJs .= "<script>
+	$(document).on('click','#btn_add_media',function(){
+		$('#upload_frm_cont').toggle();
+	});
+	$(document).on('click','.close_upload_frm_cont',function(){
+		$('#upload_frm_cont').toggle();
+	});
+</script>
+<script>
+	$('.date_picker').datepicker({format:'yyyy-mm-dd'});
+</script>
+";
+?>

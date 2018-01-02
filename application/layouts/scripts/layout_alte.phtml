@@ -109,6 +109,13 @@
 							<li><a href=""><i class="fa fa-circle-o text-yellow"></i> Upload a theme</a></li>
 	          </ul>
 	        </li>
+					<li class="treeview <?php if(isset($this->activeMenuItem) && $this->activeMenuItem == 'media' ) echo 'active'; ?>">
+	          <a href="#"><i class="fa fa-image"></i> <span>Media</span><span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+	          <ul class="treeview-menu">
+	            <li><a href="<?php echo $this->baseUrl(); ?>/backoffice/media"><i class="fa fa-circle-o text-red"></i> Manage Media</a></li>
+							<li><a href="<?php echo $this->baseUrl(); ?>/backoffice/media/index?upload=1"><i class="fa fa-circle-o text-green"></i> Add New</a></li>
+            </ul>
+	        </li>
 					<li class="treeview <?php if(isset($this->activeMenuItem) && $this->activeMenuItem == 'clients' ) echo 'active'; ?>">
 	          <a href="#"><i class="fa fa-smile-o"></i> <span>Clients</span><span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
 	          <ul class="treeview-menu">
