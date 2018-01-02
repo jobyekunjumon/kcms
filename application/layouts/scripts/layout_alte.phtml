@@ -16,7 +16,11 @@
 	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	<![endif]-->
-
+	<style>
+		._red {
+			color:#ff0000;
+		}
+	</style>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 	<?php if(isset($this->addOnCss) && $this->addOnCss)  echo $this->addOnCss; ?>
 </head>
@@ -106,7 +110,7 @@
 	            <li><a href="<?php echo $this->baseUrl(); ?>/backoffice/themes/categories"><i class="fa fa-circle-o text-red"></i> Theme categories</a></li>
 							<li><a href="<?php echo $this->baseUrl(); ?>/backoffice/themes/createcategory"><i class="fa fa-circle-o text-green"></i> Create a theme category</a></li>
 							<li><a href=""><i class="fa fa-circle-o text-aqua"></i> Themes</a></li>
-							<li><a href=""><i class="fa fa-circle-o text-yellow"></i> Upload a theme</a></li>
+							<li><a href="<?php echo $this->baseUrl(); ?>/backoffice/themes/create"><i class="fa fa-circle-o text-yellow"></i> Upload a theme</a></li>
 	          </ul>
 	        </li>
 					<li class="treeview <?php if(isset($this->activeMenuItem) && $this->activeMenuItem == 'media' ) echo 'active'; ?>">

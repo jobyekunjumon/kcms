@@ -53,7 +53,6 @@ class SitesController extends Zend_Controller_Action {
     $theme['directory'] = APPLICATION_PATH.'/../themes/'.$theme['theme_slug'];
     $theme['layout_file'] = $theme['directory'].'/'.$theme['page_layout'].'.phtml';
 
-
     ///////////////////////////////////////////////////////////////////////////////////
     //                          GET  CONTENTS                                        //
     ///////////////////////////////////////////////////////////////////////////////////

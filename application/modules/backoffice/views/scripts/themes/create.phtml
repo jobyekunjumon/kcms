@@ -1,0 +1,77 @@
+
+<?php if(isset($this->message)) echo '<div class="row"><div class="col-lg-12">'.$this->message.'</div></div>'; ?>
+
+<div class="row">
+	<div class="col-sm-12">
+		<div class="box box-info">
+			<div class="box-body" >
+				<form role="form" action="" method="post" enctype="multipart/form-data">
+					<div class="form-group col-xs-6">
+						<label for="grade">Theme Name</label>
+						<input type="text" class="form-control" name="theme_name" id="theme_name" onkeyup="generateSlug(this.value);" placeholder="Theme Name" value="<?php if(isset($this->frmData['theme_name'])) echo $this->frmData['theme_name']; ?>" >
+						<p class="info _red"><?php if(isset($this->errors['theme_name'])) echo $this->errors['theme_name']; ?></p>
+					</div>
+					<div class="form-group col-xs-6">
+						<label for="grade">Theme Identifier</label>
+						<input type="text" class="form-control" name="theme_slug" id="theme_slug" placeholder="Theme Identifier" value="<?php if(isset($this->frmData['theme_slug'])) echo $this->frmData['theme_slug']; ?>" >
+						<p class="info _red"><?php if(isset($this->errors['theme_slug'])) echo $this->errors['theme_slug']; ?></p>
+					</div>
+
+					<div style="clear:both;"></div>
+					<div class="form-group col-xs-6">
+						<label for="description">Description</label>
+						<textarea name="description" id="description" class="form-control" placeholder="Add description if any"><?php if(isset($this->frmData['description'])) echo $this->frmData['description']; ?></textarea>
+						<p class="info _red"><?php if(isset($this->errors['description'])) echo $this->errors['description']; ?></p>
+					</div>
+					<div class="form-group col-xs-6">
+						<label for="tags">Tags</label>
+						<textarea name="tags" id="tags" class="form-control" placeholder="Add tags if any"><?php if(isset($this->frmData['tags'])) echo $this->frmData['tags']; ?></textarea>
+						<p class="info _red"><?php if(isset($this->errors['tags'])) echo $this->errors['tags']; ?></p>
+					</div>
+
+					<div style="clear:both;"></div>
+
+					<div class="form-group col-xs-6">
+						<label for="">Category</label>
+						<select name="id_category" id="id_category" class="form-control" >
+							<option value="0">Please select category</option>
+							<?php
+							 if(isset($this->categoryselectEntries) && $this->categoryselectEntries) echo $this->categoryselectEntries;
+							?>
+						</select>
+						<p class="info _red"><?php if(isset($this->errors['id_category'])) echo $this->errors['id_category']; ?></p>
+					</div>
+
+					<div class="form-group col-xs-6">
+						<label for="">Theme ZIP File</label>
+						<input type="file" name="theme_file" id="theme_file"  />
+						<p class="info _red"><?php if(isset($this->errors['theme_file'])) echo $this->errors['theme_file']; ?></p>
+					</div>
+
+					<div class="hr-line-dashed" style="clear:both;" ></div>
+					<div class="form-group">
+						<div class="col-sm-8 ">
+							<button type="submit" class="btn btn-primary">Upload Theme</button>
+						</div>
+					</div>
+					<?php
+					if(isset($this->edit) && $this->edit) {
+						echo '<input type="hidden" name="id_to_edit" value="'.$this->edit['id_theme'].'" />';
+					}
+					?>
+				</form>
+			</div><!-- panel-body -->
+
+		</div><!-- 	hpanel -->
+	</div><!-- col-sm-9 -->
+</div><!-- row -->
+
+<?php
+$this->addOnJs = "<script>
+								 function generateSlug(title) {
+								    slug = title.toLowerCase();
+									slug = slug.replace(/ /g,'-');
+									document.getElementById('theme_slug').value = slug;
+								 }
+								</script>";
+?>

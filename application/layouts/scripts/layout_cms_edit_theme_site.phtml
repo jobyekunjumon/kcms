@@ -13,14 +13,13 @@ if(isset($this->contents) && $this->contents) {
 	}
 }
 
-// remove all not rendered place holders
-if(!isset($_GET['debug'])) {
-	preg_match_all('/@(.*);/', $pageContent, $notRenderedPlaceHolders);
-	if (isset($notRenderedPlaceHolders[0]) && $notRenderedPlaceHolders[0]) {
-		foreach ($notRenderedPlaceHolders[0] as $placeHolder) {
-			$pageContent = str_replace($placeHolder,'',$pageContent);
-		}
+preg_match_all('/@(.*);/', $pageContent, $notRenderedPlaceHolders);
+if (isset($notRenderedPlaceHolders[0]) && $notRenderedPlaceHolders[0]) {
+	foreach ($notRenderedPlaceHolders[0] as $placeHolder) {
+		$placeHolderContent = '<div style="border:1px solid #ff0000; padding:1px;" >'.$placeHolder.'</div>';
+		$pageContent = str_replace($placeHolder,$placeHolderContent,$pageContent);
 	}
 }
+
 echo $pageContent;
 ?>

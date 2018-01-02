@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>@headTitle;</title>
+    <meta charset="utf-8">
+    @headMeta;
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    @addOnCss;
+  </head>
+
+  <body>
+      <header id="s1">
+        <nav class="navbar navbar-default">
+          <div class="container-fluid" >
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#c2-s1" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand text-editable" href="#" id="c1-s1">@siteTitle;</a>
+            </div>
+
+            <div  id="c2-s1" class="navbar-collapse collapse menu-editable">
+              @menu;
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <section id="s2" class="slider-editable">
+        @slider;
+      </section>
+
+      <section id="s3" class="content-editable">
+        <div class="container" id="c1-s3">
+          <div class="row content-editable" id="r1-s3">
+            <div class="col-xs-12 col-md-6 text-editable" id="cl1-r1-s3">
+              @content_1;
+            </div> <!-- col -->
+
+            <div class="col-xs-12 col-md-6 text-editable" id="cl2-r1-s3">
+              @content_2;
+            </div> <!-- col -->
+
+          </div><!-- row -->
+        </div><!-- container -->
+      </section>
+
+      <footer id="s4">
+        <div class="container content-editable" id="c1-s4">
+          <div class="row content-editable" id="r1-c1-s4">
+            <div class="col-xs-12 col-md-4" id="cl1-r1-c1-s4">
+              @content_footer_image;
+              <p class="text_editable">@content_footer_text_left;</p>
+            </div><!-- col -->
+            <div class="col-xs-12 col-md-4 footermenu-editable" id="cl2-r1-c1-s4">
+              @footermenu;
+            </div>
+            <div class="col-xs-12 col-md-4 text_editable" id="cl3-r1-c1-s4">
+              @content_footer_text_right;
+            </div>
+          </div> <!-- row -->
+        </div><!-- container -->
+      </footer>
+
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      @addOnJs;
+  </body>
+</html>
