@@ -217,6 +217,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
                 $modelPages->setIdColumn('id_page');
 
                 // add default menu
+                /*
                 $newMenu = array('menu_title' => 'Main Menu',
                                   'id_site' => $siteId,
                                   'id_page' => 0,
@@ -225,6 +226,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
                                   'menu_status' => 1
                                  );
                 @$defaultMenuId = $modelMenu->insertData($newMenu);
+                */
 
                 foreach($layoutFiles as $layoutFile) {
                   // find the file name
@@ -236,7 +238,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
                   // add a default page entry
                   $newPage = array('id_site' => $siteId,
                                     'page_layout' => $layoutFileName,
-                                    'page_title' => ucwords($layoutFileName),
+                                    'page_title' => ucwords(str_replace('_',' ',$layoutFileName)),
                                     'page_slug' => $layoutFileName,
                                     'keywords' => 'Demo Site of ',
                                     'page_status' => 1
@@ -244,6 +246,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
                   @$pageId = $modelPages->insertData($newPage);
 
                   // insert menu menu items
+                  /*
                   $newMenuItem = array('id_parent_menu_item' => 0,
                                     'id_menu' => $defaultMenuId,
                                     'title' => $newPage['page_title'],
@@ -256,6 +259,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
                                     'menu_item_status' => 1,
                                    );
                   @$modelMenuItems->insertData($newMenuItem);
+                  */
 
                   // find the place holders inside each file
                   // read file
@@ -303,18 +307,15 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if(isset($categoryselectEntries) && $categoryselectEntries) $this->view->categoryselectEntries = $categoryselectEntries;
   }
 
-  public function editThemeSiteAction() {
+  public function processThemeSiteEditAction() {
     $layout = $this->_helper->layout();
-    $layout->setLayout('layout_cms_edit_theme_site');
+    $layout->setLayout('layout_alte');
 
     $request = $this->getRequest();
     $get = $request->getQuery();
 
     if(!isset($get['name']) || !isset($get['name'])) {
-      $this->_redirect('/sites/error');
-    }
-    if(!isset($get['page']) || !isset($get['page'])) {
-      $this->_redirect('/sites/error');
+      exit('Could not find site name.');
     }
 
     $siteSlug = $get['name'];
@@ -324,8 +325,8 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
 
 
     $site = $modelSites->getRowByCondition(' `site_slug` = "'.$siteSlug.'"');
-    if(!$site) $this->_redirect('/sites/error');
-    if(!$this->_authenticateSite($site)) $this->_redirect('/sites/error');  // check whether this an active site  // check subscriptions and site status
+    if(!$site) exit('Could not fetch site details.');
+    if(!$this->_authenticateSite($site)) exit('Could not authenticate site.');  // check whether this an active site  // check subscriptions and site status
 
     // get requested page
     $modelPages = new Application_Model_DbTable_Composer();
@@ -336,7 +337,186 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if(isset($get['page']) && $get['page']) $pageSlug = $get['page'];
 
     $page = $modelPages->getRowByCondition(' `id_site` = '.$site['id_site'].' AND `page_slug` = "'.$pageSlug.'" AND `page_status` = 1');
-    if(!$page) $this->_redirect('/sites/error');
+    if(!$page) exit('Could not fetch page details.');
+
+    // get all pages
+    $pages = $modelPages->getAll(' WHERE `id_site` = '.$site['id_site'].' AND `page_status` = 1 ');
+
+    // get theme
+    $modelTheme = new Application_Model_DbTable_Composer();
+    $modelTheme->setTableName('themes');
+    $modelTheme->setIdColumn('id_theme');
+    $theme = $modelTheme->getRowById($site['id_theme']);
+    $theme['page_layout'] = $page['page_layout'];
+    $theme['directory'] = APPLICATION_PATH.'/../themes/'.$theme['theme_slug'];
+    $theme['layout_file'] = $theme['directory'].'/'.$theme['page_layout'].'.phtml';
+
+    //// process content updates
+    if($request->isPost()) {
+      $post = $request->getPost();
+
+      if($post['action'] == "add"  ) {
+        if(!isset($post['component_id']) || !$post['component_id'] ) exit('Component ID not found. Please go back and try again.');
+
+        $componentType = 'text';
+        if(isset($post['component_type']) && $post['component_type']) $componentType = $post['component_type'];
+
+        if($componentType == 'text' || $componentType == 'html') {
+          if(!isset($post['content_input']) || !$post['content_input'] ) exit('Component data not found. Please go back and try again.');
+          $modelContents = new Application_Model_DbTable_Composer();
+          $modelContents->setTableName('contents');
+          $modelContents->setIdColumn('id_content');
+
+          $idPage = 0;
+          if(isset($post['page_specific']) && $post['page_specific']) $idPage = $page['id_page'];
+
+          $newContent = array('id_site' => $site['id_site'],
+                            'id_page' => $idPage,
+                            'component_id' => $post['component_id'].';',
+                            'content_type' =>$componentType,
+                            'content' => addslashes($post['content_input'])
+                           );
+          if($modelContents->insertData($newContent)) {
+            $this->_redirect('/backoffice/themes/edit-theme-site?name='.$site['site_slug'].'&page='.$page['page_slug']);
+          } else {
+            exit('Something went wrong while adding content. Please go back and try again.');
+          }
+        } else if($componentType == 'menu') {
+          // validate input
+          $validationErrors = $this->_validateMenuCreation($post);
+          if($validationErrors) {
+            echo 'You have some validation errors. Please fix the following errors. Go back, make the changes and submit again.';
+            foreach($validationErrors as $error) {
+              echo '<br>*'.$error;
+            }
+            exit;
+          } else {
+            // add menu
+            $modelMenuItems = new Application_Model_DbTable_Menuitems();
+            $modelMenu = new Application_Model_DbTable_Composer();
+            $modelMenu->setTableName('menu');
+            $modelMenu->setIdColumn('id_menu');
+
+            $idPage = 0;
+            if(isset($post['page_specific']) && $post['page_specific']) $idPage = $page['id_page'];
+            $newMenu = array('menu_title' => $post['menu_title'],
+                              'id_site' => $site['id_site'],
+                              'id_page' => $idPage,
+                              'component_id' => $post['component_id'].';',
+                              'menu_type' => $post['menu_type'],
+                              'menu_status' => 1
+                             );
+            if($defaultMenuId = $modelMenu->insertData($newMenu)) {
+              $menuItemPageId = 0;
+              $menuItemPageSlug = '';
+              $menuItemExternalLink = '';
+              $menuItemInternalTargetName = '';
+              if($post['link_type'] == 'page_link') {
+                $selectedPage = $modelPages->getRowById($post['link_type_attribute']);
+                if($selectedPage) {
+                  $menuItemPageSlug = $selectedPage['page_slug'];
+                  $menuItemPageId = $selectedPage['id_page'];
+                }
+              } else if($post['link_type'] == 'internal_page_link') {
+                $menuItemInternalTargetName = $post['link_type_attribute'];
+              } else if($post['link_type'] == 'external') {
+                $menuItemExternalLink = $post['link_type_attribute'];
+              }
+              // insert default menu item
+              $newMenuItem = array('id_parent_menu_item' => 0,
+                                'id_menu' => $defaultMenuId,
+                                'title' => $post['title'],
+                                'menu_slug' => strtolower(str_replace(' ','_',$post['title'])),
+                                'target' => $post['target'],
+                                'link_type' => $post['link_type'],
+                                'page_id' => $menuItemPageId,
+                                'page_slug' => $menuItemPageSlug,
+                                'internal_target_name' => $menuItemInternalTargetName,
+                                'external_link' => $menuItemExternalLink,
+                                'menu_item_status' => 1,
+                               );
+              if($modelMenuItems->insertData($newMenuItem)) {
+                $this->_redirect('/backoffice/themes/edit-theme-site?name='.$site['site_slug'].'&page='.$page['page_slug']);
+              } else {
+                // roll back changes
+                $modelMenu->deleteData($defaultMenuId);
+                exit('Something went wrong while adding menu items. Rolling back changes. Please try again later.');
+              }
+            } else {
+              exit('Something went wrong while creating menu. Please try again later.');
+            }
+          }
+
+        } else if($componentType == 'image') {
+          $modelSiteMedia = new Application_Model_DbTable_Composer();
+          $modelSiteMedia->setTableName('site_media');
+          $modelSiteMedia->setIdColumn('id_site_media');
+          //$this->utilities->debug($post); exit;
+          if(isset($post['featured_images'][0]) && $post['featured_images'][0]) {
+            $altText = ''; $mediaSizeWidth = ''; $mediaSizeHeight = ''; $mediaThumbnail = '';$idPage = 0;
+            if(isset($post['page_specific']) && $post['page_specific']) $idPage = $page['id_page'];
+            if(isset($post['alt_text']) && $post['alt_text']) $altText = $post['alt_text'];
+            if(isset($post['media_size_width']) && $post['media_size_width']) $mediaSizeWidth = $post['media_size_width'];
+            if(isset($post['media_size_height']) && $post['media_size_height']) $mediaSizeHeight = $post['media_size_height'];
+            if(isset($post['thumbnail']) && $post['thumbnail'] != 'custom') $mediaThumbnail = $post['thumbnail'];
+
+            $newSiteMedia = array('id_site' => $site['id_site'],
+                                'id_page' => $idPage,
+                                'component_id' => $post['component_id'].';',
+                                'id_media' => $post['featured_images'][0],
+                                'alt_text' => $altText,
+                                'media_size_width' => $mediaSizeWidth,
+                                'media_size_height' => $mediaSizeHeight,
+                                'thumbnail' => $mediaThumbnail,
+                                'site_media_status' => 1
+                               );
+             if($modelSiteMedia->insertData($newSiteMedia)) {
+               $this->_redirect('/backoffice/themes/edit-theme-site?name='.$site['site_slug'].'&page='.$page['page_slug']);
+             } else {
+               exit('Something went wrong while adding media item. Rolling back changes. Please try again later.');
+             }
+          } else {
+            exit('No images selected. Please go back and try again.');
+          }
+        }
+      }
+    }
+  }
+
+  public function editThemeSiteAction() {
+    $layout = $this->_helper->layout();
+    $layout->setLayout('layout_cms_edit_theme_site');
+
+    $request = $this->getRequest();
+    $get = $request->getQuery();
+
+    if(!isset($get['name']) || !isset($get['name'])) {
+      exit('Could not find site name.');
+    }
+
+    $siteSlug = $get['name'];
+    $modelSites = new Application_Model_DbTable_Composer();
+    $modelSites->setTableName('sites');
+    $modelSites->setIdColumn('id_site');
+
+
+    $site = $modelSites->getRowByCondition(' `site_slug` = "'.$siteSlug.'"');
+    if(!$site) exit('Could not fetch site details.');
+    if(!$this->_authenticateSite($site)) exit('Could not authenticate site.');  // check whether this an active site  // check subscriptions and site status
+
+    // get requested page
+    $modelPages = new Application_Model_DbTable_Composer();
+    $modelPages->setTableName('pages');
+    $modelPages->setIdColumn('id_page');
+
+    $pageSlug = 'home';
+    if(isset($get['page']) && $get['page']) $pageSlug = $get['page'];
+
+    $page = $modelPages->getRowByCondition(' `id_site` = '.$site['id_site'].' AND `page_slug` = "'.$pageSlug.'" AND `page_status` = 1');
+    if(!$page) exit('Could not fetch page details.');
+
+    // get all pages
+    $pages = $modelPages->getAll(' WHERE `id_site` = '.$site['id_site'].' AND `page_status` = 1 ');
 
     // get theme
     $modelTheme = new Application_Model_DbTable_Composer();
@@ -361,7 +541,6 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     $modelSliders->setTableName('sliders');
     $modelSliders->setIdColumn('id_slider');
     $sliders = $modelSliders->getAll(' WHERE `id_site` = '.$site['id_site'].' AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0)');
-
     // generate slider contents
     if($sliders) {
       $modelSliderItems = new Application_Model_DbTable_Composer();
@@ -427,7 +606,6 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     $modelMenu->setTableName('menu');
     $modelMenu->setIdColumn('id_menu');
     $menu = $modelMenu->getAll(' WHERE `id_site` = '.$site['id_site'].' AND `menu_status` = 1 AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0)');
-
     if($menu) {
       $modelMenuItems = new Application_Model_DbTable_Menuitems();
 
@@ -481,17 +659,58 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
         $contents[$contentsCount]['content'] = $this->_getForm($form,'post','');
       }
     }
+
     //$this->utilities->debug($site);$this->utilities->debug($page);$this->utilities->debug($contents); exit();
 
     if(isset($site) && $site) $this->view->site = $site;
     if(isset($page) && $page) $this->view->page = $page;
+    if(isset($pages) && $pages) $this->view->pages = $pages;
     if(isset($theme) && $theme) $this->view->theme = $theme;
     if(isset($contents) && $contents) $this->view->contents = $contents;
+  }
+
+  public function getPagesSelectEntryAction() {
+    $layout = $this->_helper->layout();
+    $layout->disableLayout();
+    $this->_helper->viewRenderer->setNoRender();
+
+    $request = $this->getRequest();
+    $out = '';
+    if($request->isPost()) {
+      $post = $request->getPost();
+      if($post['id_site']) {
+        $modelPages = new Application_Model_DbTable_Composer();
+        $modelPages->setTableName('pages');
+        $modelPages->setIdColumn('id_page');
+        $pages = $modelPages->getAll(' WHERE `id_site` = '.$post['id_site'].' AND `page_status` = 1 ');
+
+        if($pages) {
+          foreach($pages as $page) {
+            $out .= '<option value="'.$page['id_page'].'"';
+            if(isset($post['selected_page']) && $post['selected_page'] == $page['id_page'] ) $out .= ' selected="selected"';
+            $out .= '>'.$page['page_title'].'</option>';
+          }
+        }
+      }
+    }
+
+    exit($out);
   }
 
   ////////////////////////////////////////////////////////////////////
   //////////////   HELPER FYNCTIONS //////////////////////////////////
   ////////////////////////////////////////////////////////////////////
+
+  public function _validateMenuCreation($post) {
+    $errors = array();
+    if(!isset($post['menu_title']) || !$post['menu_title']) $errors['menu_title'] = 'Enter menu title.';
+    if(!isset($post['menu_type']) || !$post['menu_type']) $errors['menu_type'] = 'Please select a menu type.';
+    if(!isset($post['title']) || !$post['title']) $errors['title'] = 'Please enter a menu item title.';
+    if(!isset($post['link_type']) || !$post['link_type']) $errors['link_type'] = 'Please select a link type.';
+    if(!isset($post['link_type_attribute']) || !$post['link_type_attribute']) $errors['link_type_attribute'] = 'Please enter link item target.';
+    return $errors;
+  }
+
   function _getForm($form,$method,$action) {
     $out = '';
     $modelFormElements = new Application_Model_DbTable_Composer();
@@ -576,6 +795,19 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     //   $mediaUrl = $serverUrl.'/news/backoffice/media/imageurl?file='.$mediaUrl.'&maxw='.$maxWidth.'&maxh='.$maxHeight;
     // }
     if($outputType == 'url') return $mediaUrl;
+
+    if($media['media_size_width'] || $media['media_size_height'] ) {
+      $mediaSizeWidth = (isset($media['media_size_width']) && $media['media_size_width'])?$media['media_size_width']:'';
+      $mediaSizeHeight = (isset($media['media_size_height']) && $media['media_size_height'])?$media['media_size_height']:'';
+      $out = '<img src="'.$mediaUrl.'"';
+        $out .= ' width="'.$mediaSizeWidth.'" height="'.$mediaSizeHeight.'" ';
+        if(isset($media['altered_alt_text'])) $out .= 'alt="'.$media['altered_alt_text'].'"';
+        else if(isset($media['alt_text'])) $out .= 'alt="'.$media['alt_text'].'"';
+        else if(isset($media['caption'])) $out .= 'alt="'.$media['caption'].'"';
+        else  $out .= 'alt="Image '.$media['id_media'].'"';
+      $out .=  ' />';
+      return $out;
+    }
 
     // create image tag
     $out = '<img src="'.$mediaUrl.'"';

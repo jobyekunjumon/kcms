@@ -9,7 +9,7 @@ $pageContent = str_replace('@addOnJs;',$addOnJs,$pageContent);
 
 if(isset($this->contents) && $this->contents) {
 	foreach($this->contents as $content ) {
-		$pageContent = str_replace($content['component_id'],$content['content'],$pageContent);
+		$pageContent = str_replace($content['component_id'],stripslashes($content['content']),$pageContent);
 	}
 }
 

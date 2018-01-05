@@ -21,7 +21,7 @@ class Backoffice_MediaController extends Zend_Controller_Action {
     $this->modelLog = new Application_Model_DbTable_Activitylog();
   }
 
-  public function asyncGetMediaLibraryAction() {
+  public function asyncGetMediaLibraryAction() { 
     $layout = $this->_helper->layout();
     $layout->disableLayout();
     $this->_helper->viewRenderer->setNoRender();

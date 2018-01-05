@@ -19,9 +19,6 @@ class SitesController extends Zend_Controller_Action {
     if(!isset($get['name']) || !isset($get['name'])) {
       $this->_redirect('/sites/error');
     }
-    if(!isset($get['page']) || !isset($get['page'])) {
-      $this->_redirect('/sites/error');
-    }
 
     $siteSlug = $get['name'];
     $modelSites = new Application_Model_DbTable_Composer();
@@ -289,6 +286,19 @@ class SitesController extends Zend_Controller_Action {
     // }
     if($outputType == 'url') return $mediaUrl;
 
+    if($media['media_size_width'] || $media['media_size_height'] ) {
+      $mediaSizeWidth = (isset($media['media_size_width']) && $media['media_size_width'])?$media['media_size_width']:'';
+      $mediaSizeHeight = (isset($media['media_size_height']) && $media['media_size_height'])?$media['media_size_height']:'';
+      $out = '<img src="'.$mediaUrl.'"';
+        $out .= ' width="'.$mediaSizeWidth.'" height="'.$mediaSizeHeight.'" ';
+        if(isset($media['altered_alt_text'])) $out .= 'alt="'.$media['altered_alt_text'].'"';
+        else if(isset($media['alt_text'])) $out .= 'alt="'.$media['alt_text'].'"';
+        else if(isset($media['caption'])) $out .= 'alt="'.$media['caption'].'"';
+        else  $out .= 'alt="Image '.$media['id_media'].'"';
+      $out .=  ' />';
+      return $out;
+    }
+    
     // create image tag
     $out = '<img src="'.$mediaUrl.'"';
       if(isset($media['altered_alt_text'])) $out .= 'alt="'.$media['altered_alt_text'].'"';

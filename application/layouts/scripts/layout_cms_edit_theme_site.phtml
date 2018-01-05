@@ -1,23 +1,195 @@
 <?php
 @$pageContent = file_get_contents($this->theme['layout_file']);
 if(!$pageContent) exit('Something went wrong while fetching site data. Please try again later.');
-// assign addon css and scripts
+// assign addon css , content and scripts
 $addOnCss = '<link rel="stylesheet" href="'.$this->baseUrl().'/themes/'.$this->theme['theme_slug'].'/css/style.css">';
-$addOnJs = '';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_alte/bower_components/font-awesome/css/font-awesome.min.css">';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/style.css">';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_alte/dist/css/AdminLTE.min.css">';
+
+$addOnJs = '<script src="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/editor.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_alte/bower_components/ckeditor/ckeditor.js"></script>';
+
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_backoffice/vendor/bootstrap-datepicker-master/dist/css/bootstrap-datepicker3.min.css" />';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_backoffice/vendor/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" />';
+
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_backoffice/vendor/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_backoffice/vendor/bootstrap-datepicker-master/dist/js/bootstrap-datepicker.min.js"></script>';
+$addOnJs .= "<script>
+	$(document).on('click','#btn_add_media',function(){
+		$('#upload_frm_cont').toggle();
+	});
+	$(document).on('click','.close_upload_frm_cont',function(){
+		$('#upload_frm_cont').toggle();
+	});
+</script>
+<script>
+	$('.date_picker').datepicker({format:'yyyy-mm-dd'});
+</script>
+";
+/*
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_backoffice/vendor/summernote/dist/summernote.css" />';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_backoffice/vendor/summernote/dist/summernote-bs3.css" />';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_backoffice/vendor/summernote/dist/summernote.min.js"></script>';
+$addOnJs .= "<script>
+    $(function () {
+        // Initialize summernote plugin
+        $('.summernote').summernote({
+		  height: 200,
+		  minHeight: null,
+		  maxHeight: null,
+		  focus: true
+		});
+    });
+</script>";
+
+$addOnJs .= "<script>
+    $(function () {
+        // Initialize summernote plugin
+        $('.summernote-min').summernote({
+		  height: 75,
+		  minHeight: null,
+		  maxHeight: null,
+		  focus: true,
+		  toolbar: [
+			['style', ['bold', 'italic', 'underline', 'clear']],
+			['fontsize', ['fontsize']],
+			['color', ['color']],
+			['para', ['ul', 'ol', 'paragraph']],
+			['height', ['height']]
+		  ]
+		});
+    });
+</script>";
+*/
+
+$addOnContent =  '<div class="modal fade" id="modal-add">
+										<div id="modal_add_content" class="modal-dialog ">
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+													<span aria-hidden="true">&times;</span></button>
+													<h4 class="modal-title" id="modal_add_title" >Add content</h4>
+												</div>
+												<div class="modal-body" id="modal_add_body">
+													<form role="form" id="frmAddContent" action="'.$this->baseUrl().'/backoffice/themes/process-theme-site-edit?name='.$this->site['site_slug'].'&page='.$this->page['page_slug'].'" method="post">
+														<input type="hidden" name="component_id" id="component_id" value="" />
+														<input type="hidden" name="id_site" id="id_site" value="'.$this->site['id_site'].'" />
+														<input type="hidden" name="id_page" id="id_page" value="'.$this->page['id_page'].'" />
+														<input type="hidden" name="action" id="action" value="add" />
+														<div class="row">
+							                <div class="form-group">
+																<div class="col-sm-6">
+								                  <select class="form-control" name="component_type" id="component_type" id="component_type">
+																		<option value="" >Select component type</option>
+																		<option value="text" >Text</option>
+																		<option value="html" >HTML</option>
+																		<option value="image" >Image</option>
+																		<option value="menu" >Menu</option>
+																		<option value="slider" >Slider</option>
+																		<option value="form" >Form</option>
+																		<option value="text" >Map</option>
+																	</select>
+																</div>
+																<label class="col-sm-6 control-label" >Specific to this page only ? <input type="checkbox" name="page_specific" id="page_specific" value="1" /></label>
+							                </div>
+														</div>
+
+							              <div class="content_form margin-top-md" id="content_form" >
+														</div>
+
+							            </form>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+													<button type="button" class="btn btn-sm  btn-info" id="btn_submit_add_content"><i class="fa fa-save"></i> Save changes</button>
+												</div>
+											</div>
+										</div>
+									</div>';
+
+$addOnContent .= '<div class="modal fade" id="galleryModal"  role="dialog"  aria-hidden="true">
+	<div class="modal-dialog modal-lg" style="width:90%;">
+		<div class="modal-content">
+			<div class="color-line"></div>
+			<div class="modal-header">
+				<h4 class="modal-title">Media Library</h4>
+			</div>
+
+			<div class="modal-body" >
+				<div class="col-sm-9" style="border-right:2px solid #ccc;">
+					'.@$this->mediaModalMessage.'
+					<div class="panel-body" style="padding-top:2px;padding-bottom:2px; border-bottom:2px solid #ccc;">
+						<form name="frmFilter" action=""  class="form-vertivcal" >
+							<div class="form-group col-sm-4">
+								<a  class="btn btn-info" href="'.$this->baseUrl().'/backoffice/media?upload=1" target="_blank" ><i class="fa fa-plus"></i> Upload</a>
+							</div>
+							<div class="form-group col-sm-3">
+								<input class="form-control" type="text" name="file_name" id="file_name" placeholder="Media Name" value="'.@$this->frmData['file_name'].'" >
+							</div>
+							<div class="form-group col-sm-2">
+								<input class="form-control date_picker" type="text" name="date_from" id="date_from" placeholder="Date From" value="'.@$this->frmData['date_from'].'" >
+							</div>
+							<div class="form-group col-sm-2">
+								<input class="form-control date_picker" type="text" name="date_to" id="date_to" placeholder="Date To" value="'.$this->frmData['date_to'].'" >
+							</div>
+
+							<div class="form-group col-sm-1">
+								<button type="button" id="btn_search_media" class="btn btn-primary" >Filter</button>
+							</div>
+						</form>
+						<hr>
+					</div>
+					<br>
+
+					<div id="library_cont" style="height:280px; overflow:auto; "></div>
+
+				</div>
+
+				<div class="col-sm-3" id="media_cont" style="height:370px; overflow:auto; " >
+				</div>
+
+				<div style="clear:both;"></div>
+
+			</div><!-- modal-body -->
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+				<button type="button" class="btn btn-primary btn-sm" id="btn_set_fetured_image" data-dismiss="modal" ><i class="fa fa-check"></i> Select Image</button>
+			</div>
+		</div>
+	</div>
+</div>';
+
 $pageContent = str_replace('@addOnCss;',$addOnCss,$pageContent);
 $pageContent = str_replace('@addOnJs;',$addOnJs,$pageContent);
+$pageContent = str_replace('@addOnContent;',$addOnContent,$pageContent);
 
 if(isset($this->contents) && $this->contents) {
 	foreach($this->contents as $content ) {
-		$pageContent = str_replace($content['component_id'],$content['content'],$pageContent);
+		$componentId = str_replace(';','',$content['component_id']);
+		$placeHolderContent = '<div class="editable_update" >';
+			$placeHolderContent .= '<div class="btn-group edit-control">
+																<button id="edit-'.$componentId.'" type="button" class="btn_edit_content btn bg-navy btn-flat btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> EDIT</button>
+															</div>';
+			$placeHolderContent .= stripslashes($content['content']);
+		$placeHolderContent .= '</div>';
+		$pageContent = str_replace($content['component_id'],$placeHolderContent,$pageContent);
 	}
 }
 
 preg_match_all('/@(.*);/', $pageContent, $notRenderedPlaceHolders);
 if (isset($notRenderedPlaceHolders[0]) && $notRenderedPlaceHolders[0]) {
 	foreach ($notRenderedPlaceHolders[0] as $placeHolder) {
-		$placeHolderContent = '<div style="border:1px solid #ff0000; padding:1px;" >'.$placeHolder.'</div>';
-		$pageContent = str_replace($placeHolder,$placeHolderContent,$pageContent);
+		$componentId = str_replace(';','',$placeHolder);
+		$placeHolderContent = '<div class="editable" >';
+			$placeHolderContent .= '<div class="btn-group edit-control">
+																<button id="add-'.$componentId.'" type="button" class="btn_add_content btn bg-navy btn-flat btn-xs" data-toggle="modal" data-target="#modal-add"><i class="fa fa-plus"></i> ADD</button>
+															</div>';
+			$placeHolderContent .= $placeHolder;
+		$placeHolderContent .= '</div>';
+
+ 		$pageContent = str_replace($placeHolder,$placeHolderContent,$pageContent);
 	}
 }
 
