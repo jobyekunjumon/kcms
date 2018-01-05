@@ -478,6 +478,57 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
           } else {
             exit('No images selected. Please go back and try again.');
           }
+        } else if($componentType == 'slider') {
+          $modelSlider = new Application_Model_DbTable_Composer();
+          $modelSlider->setTableName('sliders');
+          $modelSlider->setIdColumn('id_slider');
+          $modelSliderItems = new Application_Model_DbTable_Composer();
+          $modelSliderItems->setTableName('slider_items');
+          $modelSliderItems->setIdColumn('id_slider_item');
+          $modelMedia = new Application_Model_DbTable_Media();
+
+          $this->utilities->debug($post);
+          if(isset($post['featured_images']) && $post['featured_images']) {
+            $showPagination = 0; $showNavigation = 0; $showItemDescription = 0; $prefferedImageSize = ''; $idPage = 0;
+            if(isset($post['page_specific']) && $post['page_specific']) $idPage = $page['id_page'];
+            if(isset($post['preffered_image_size']) && $post['preffered_image_size']) $prefferedImageSize = $post['preffered_image_size'];
+            if(isset($post['show_pagination']) && $post['show_pagination']) $showPagination = 1;
+            if(isset($post['show_navigation']) && $post['show_navigation']) $showNavigation = 1;
+            if(isset($post['show_item_description']) && $post['show_item_description']) $showItemDescription = 1;
+            $newSlider = array('id_site' => $site['id_site'],
+                                'id_page' => $idPage,
+                                'component_id' => $post['component_id'].';',
+                                'slider_type' => 'carousel',
+                                'preffered_image_size' => $prefferedImageSize,
+                                'show_pagination' => $showPagination,
+                                'show_navigation' => $showNavigation,
+                                'show_item_description' => $showItemDescription,
+                                'slider_status' => 1
+                               );
+
+            if($sliderId = $modelSlider->insertData($newSlider)) {
+              foreach($post['featured_images'] as $key=>$mediaId) {
+                // get media
+                $media = $modelMedia->getRowById($mediaId);
+                $imageUrl = $this->_getImage($media,'url');
+                $altText = (isset($post['alt_text'][0]) && $post['alt_text'][0])?addslashes($post['alt_text'][0]):'';
+                $caption = (isset($post['item_data'][0]) && $post['item_data'][0])?addslashes($post['item_data'][0]):'';
+
+                $newSliderItem = array('id_slider' => $sliderId,
+                                    'image_url' => $imageUrl,
+                                    'alt_text' => $altText,
+                                    'item_data' => $caption
+                                   );
+                @$modelSliderItems->insertData($newSliderItem);
+
+              }
+              $this->_redirect('/backoffice/themes/edit-theme-site?name='.$site['site_slug'].'&page='.$page['page_slug']);
+            } else {
+              exit('Something went wrong while adding slider. Please go back and try again.');
+            }
+          } else {
+            exit('No images selected. Please go back and try again.');
+          }
         }
       }
     }
@@ -771,6 +822,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
 
     return $out;
   }
+
   function _getImage($media,$outputType='image',$maxHeight='',$maxWidth='') {
 
     $serverUrl = $this->utilities->getServerUrl();
