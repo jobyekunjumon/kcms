@@ -4,6 +4,7 @@ if(!$pageContent) exit('Something went wrong while fetching site data. Please tr
 // assign addon css and scripts
 $addOnCss = '<link rel="stylesheet" href="'.$this->baseUrl().'/themes/'.$this->theme['theme_slug'].'/css/style.css">';
 $addOnJs = '';
+$pageContent = str_replace('<themeDir>',$this->baseUrl().'/themes/'.$this->theme['theme_slug'],$pageContent);
 $pageContent = str_replace('@addOnCss;',$addOnCss,$pageContent);
 $pageContent = str_replace('@addOnJs;',$addOnJs,$pageContent);
 

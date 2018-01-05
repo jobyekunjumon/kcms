@@ -21,7 +21,7 @@ class Backoffice_MediaController extends Zend_Controller_Action {
     $this->modelLog = new Application_Model_DbTable_Activitylog();
   }
 
-  public function asyncGetMediaLibraryAction() { 
+  public function asyncGetMediaLibraryAction() {
     $layout = $this->_helper->layout();
     $layout->disableLayout();
     $this->_helper->viewRenderer->setNoRender();
@@ -59,8 +59,8 @@ class Backoffice_MediaController extends Zend_Controller_Action {
       $out = '';
       foreach($medias as $media) {
         $out .= '<div class="col-sm-2">';
-        $out .= '<div class="hpanel">';
-        $out .= '<div class="panel-body" style="padding:0; height:100px;">';
+        $out .= '<div class="box box-info">';
+        $out .= '<div class="box-body" style="padding:0; height:100px;">';
         $out .= '<img class="media_image" id="media_'.$media['id_media'].'" src="'.$media['file_directory'].'/'.$media['file_name'].'-smallsq.'.$media['file_extension'].'" width="100%" />';
         $out .= '</div>'; // panel body
 

@@ -946,7 +946,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if(!isset($post['theme_slug']) || !$post['theme_slug']) $errors['theme_slug'] = "Please enter theme identifier";
     else if(!$modelTheme->isUnique('theme_slug',$post['theme_slug'])) $errors['theme_slug'] = "This theme identifier already exist.";
     if(!isset($post['id_category']) || !$post['id_category']) $errors['id_category'] = "Please select a category.";
-
+    
     $allowedExts = array("zip");
     if(!isset($_FILES["theme_file"]) || !$_FILES["theme_file"]) {
       $errors['theme_file'] = 'Please choose a file to upload.';

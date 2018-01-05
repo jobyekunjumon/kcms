@@ -66,7 +66,7 @@ $addOnContent =  '<div class="modal fade" id="modal-add">
 							            </form>
 												</div>
 												<div class="modal-footer">
-													<button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+													<button type="button"  class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
 													<button type="button" class="btn btn-sm  btn-info" id="btn_submit_add_content"><i class="fa fa-save"></i> Save changes</button>
 												</div>
 											</div>
@@ -126,6 +126,7 @@ $addOnContent .= '<div class="modal fade" id="galleryModal"  role="dialog"  aria
 	</div>
 </div>';
 
+$pageContent = str_replace('<themeDir>',$this->baseUrl().'/themes/'.$this->theme['theme_slug'],$pageContent);
 $pageContent = str_replace('@addOnCss;',$addOnCss,$pageContent);
 $pageContent = str_replace('@addOnJs;',$addOnJs,$pageContent);
 $pageContent = str_replace('@addOnContent;',$addOnContent,$pageContent);

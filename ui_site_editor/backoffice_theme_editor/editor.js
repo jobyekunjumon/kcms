@@ -1,3 +1,13 @@
+var modalsActive = 0;
+$(document).on('shown.bs.modal', function () {
+  ++modalsActive;
+});
+$(document).on('hidden.bs.modal', function () {
+  if (--modalsActive > 0) {
+    $('body').addClass('modal-open');
+  }
+});
+
 $(document).on('click','.btn_add_content',function(){
   var elementId = $(this).attr('id');
   var elementComponents = elementId.split('-');
@@ -24,10 +34,6 @@ $(document).on('change','#component_type',function(){
 
 $(document).on('click','#btn_submit_add_content',function(){
   $('#frmAddContent').submit();
-  // var formData = $('#frmAddContent').serialize();
-  // var htmlData = $('#content_input_html').val();
-  // alert(htmlData);
-  // alert(formData);
 });
 
 $(document).on('change','.link_type',function(){
@@ -200,10 +206,9 @@ $(document).on('click','#btn_set_fetured_image',function(){
 				{"name":"document","groups":["mode"]},
 				{"name":"insert","groups":["insert"]},
 				{"name":"styles","groups":["styles"]},
-				{"name":"about","groups":["about"]}
 			],
 			removeButtons: 'Underline,Strike,Subscript,Superscript,Anchor,Styles,Specialchar'
-		} );*/
+		} ); */
   }
 });
 
