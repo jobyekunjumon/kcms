@@ -361,7 +361,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
         $componentType = 'text';
         if(isset($post['component_type']) && $post['component_type']) $componentType = $post['component_type'];
 
-        if($componentType == 'text' || $componentType == 'html') {
+        if($componentType == 'text' || $componentType == 'html' || $componentType == 'map') {
           if(!isset($post['content_input']) || !$post['content_input'] ) exit('Component data not found. Please go back and try again.');
           $modelContents = new Application_Model_DbTable_Composer();
           $modelContents->setTableName('contents');
@@ -529,6 +529,57 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
           } else {
             exit('No images selected. Please go back and try again.');
           }
+        } else if($componentType == 'form') {
+          // validate input
+          $validationErrors = $this->_validateFormCreation($post);
+          if($validationErrors) {
+            echo 'You have some validation errors. Please fix the following errors. Go back, make the changes and submit again.';
+            foreach($validationErrors as $error) {
+              echo '<br>*'.$error;
+            }
+            exit;
+          } else {
+            // add menu
+            $modelForms = new Application_Model_DbTable_Composer();
+            $modelForms->setTableName('forms');
+            $modelForms->setIdColumn('id_form');
+
+            $idPage = 0;
+            if(isset($post['page_specific']) && $post['page_specific']) $idPage = $page['id_page'];
+            // add form
+            $newForm = array('form_name' => $post['form_name'],
+                              'form_slug' => str_replace(' ','_',strtolower($site['form_title'])),
+                              'id_site' => $site['id_site'],
+                              'id_page' => $idPage,
+                              'component_id' => $post['component_id'].';',
+                              'form_type' => $post['form_type'],
+                              'data_handler' => (isset($post['data_handler']) && $post['data_handler'])?$post['data_handler']:'save_and_email',
+                              'form_status' => 1
+                             );
+            if($formId = $modelForms->insertData($newForm)) {
+
+              // insert  menu items
+              $sqlInsertFormElements = 'INSERT INTO `form_elements` (`id_form_element`, `id_form`, `element_type`, `element_name`, `place_holder`, `validations`, `element_class`, `default_value`, `prefill_values`, `element_status`) ';
+              $conj = 'VALUES ';
+
+              foreach($post['elements'] as $element) {
+                $validations = (isset($element['validations']) && $element['validations']) ? implode(',',$element['validations']) : '';
+                $sqlInsertFormElements .= $conj.' (NULL, "'.$formId.'", "'.$element['element_type'].'", "'.addslashes($element['element_name']).'", "'.addslashes($element['element_name']).'", "'.$validations.'", NULL, "'.addslashes($element['default_value']).'",  NULL, "1") ';
+                $conj = ' , ';
+              }
+
+              if($modelForms->execute($sqlInsertFormElements)) {
+                $this->_redirect('/backoffice/themes/edit-theme-site?name='.$site['site_slug'].'&page='.$page['page_slug']);
+              } else {
+                // roll back changes
+                $modelForms->deleteData($formId);
+                exit('Something went wrong while adding form items. Rolling back changes. Please try again later.');
+              }
+            } else {
+              exit('Something went wrong while creating form. Please try again later.');
+            }
+          }
+
         }
       }
     }
@@ -647,8 +698,9 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
 
         $contentsCount = count($contents);
         $contents[$contentsCount]['component_id'] = $slider['component_id'];
-        $contents[$contentsCount]['component_type'] = 'slider';
+        $contents[$contentsCount]['content_type'] = 'slider';
         $contents[$contentsCount]['content'] = $sliderContent;
+        $contents[$contentsCount]['id_content'] = $slider['id_slider'];
       }
     }
 
@@ -671,8 +723,9 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
 
         $contentsCount = count($contents);
         $contents[$contentsCount]['component_id'] = $menuEntry['component_id'];
-        $contents[$contentsCount]['component_type'] = 'menu';
+        $contents[$contentsCount]['content_type'] = 'menu';
         $contents[$contentsCount]['content'] = $menuContent;
+        $contents[$contentsCount]['id_content'] = $menuEntry['id_menu'];
       }
 
     }
@@ -680,7 +733,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     // get media
     $modelMedia = new Application_Model_DbTable_Media();
     $sqlGetSiteMedia = 'SELECT sm.`component_id`, sm.`alt_text` as altered_alt_text, m.`id_media`, m.`file_name`, m.`file_type`,
-                               m.`file_extension`,m.`file_directory`, m.`file_url`, m.`caption`, m.`alt_text`, sm.`media_size_width`, sm.`media_size_height`,sm.`thumbnail`
+                               m.`file_extension`,m.`file_directory`, m.`file_url`, m.`caption`, m.`alt_text`,sm.`id_site_media`, sm.`media_size_width`, sm.`media_size_height`,sm.`thumbnail`
                                FROM `site_media` sm, `media` m
                                WHERE m.`id_media` = sm.`id_media` AND sm.`id_site` = '.$site['id_site'].' AND (sm.`id_page` = '.$page['id_page'].' OR sm.`id_page` = 0)
                                AND sm.`site_media_status` = 1 AND m.`media_status` =1';
@@ -691,8 +744,9 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
         if($media) {
           $contentsCount = count($contents);
           $contents[$contentsCount]['component_id'] = $media['component_id'];
-          $contents[$contentsCount]['component_type'] = 'image';
+          $contents[$contentsCount]['content_type'] = 'image';
           $contents[$contentsCount]['content'] = $this->_getImage($media);
+          $contents[$contentsCount]['id_content'] = $media['id_site_media'];
         }
       }
     }
@@ -701,13 +755,14 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     $modelForms = new Application_Model_DbTable_Composer();
     $modelForms->setTableName('forms');
     $modelForms->setIdColumn('id_form');
-    $forms = $modelForms->getAll(' WHERE `id_site` = '.$site['id_site'].' AND `form_status` = 1 AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0)');
+    $forms = $modelForms->getAll(' WHERE `id_site` = '.$site['id_site'].' AND `form_status` = 1 AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0 ) ');
     if($forms) {
       foreach($forms as $form) {
         $contentsCount = count($contents);
         $contents[$contentsCount]['component_id'] = $form['component_id'];
-        $contents[$contentsCount]['component_type'] = 'form';
-        $contents[$contentsCount]['content'] = $this->_getForm($form,'post','');
+        $contents[$contentsCount]['content_type'] = 'form';
+        $contents[$contentsCount]['content'] = $this->utilities->getForm($form,'post','');
+        $contents[$contentsCount]['id_content'] = $form['id_form'];
       }
     }
 
@@ -748,9 +803,258 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     exit($out);
   }
 
+  public function getMenuItemsAction() {
+    $layout = $this->_helper->layout();
+    $layout->disableLayout();
+    $this->_helper->viewRenderer->setNoRender();
+
+    $request = $this->getRequest();
+    if(!$request->isPost()) exit('Could not find any data.');
+    $post = $request->getPost();
+    if(!isset($post['id_site']) || !$post['id_site']) exit('Could not fetch site data.');
+    if(!isset($post['id_menu']) || !$post['id_menu']) exit('Could not fetch menu details.');
+
+    $modelSites = new Application_Model_DbTable_Composer();
+    $modelSites->setTableName('sites');
+    $modelSites->setIdColumn('id_site');
+    $site = $modelSites->getRowByCondition(' `id_site` = "'.$post['id_site'].'"');
+    if(!$site) exit('Could not fetch site details.');
+
+    // get menus
+    $modelMenu = new Application_Model_DbTable_Composer();
+    $modelMenu->setTableName('menu');
+    $modelMenu->setIdColumn('id_menu');
+    $menu = $modelMenu->getRowByCondition('  `id_site` = '.$site['id_site'].' AND `id_menu` = '.$post['id_menu']);
+    if($menu) {
+      $modelMenuItems = new Application_Model_DbTable_Menuitems();
+      $menuItemsHirarchy = $modelMenuItems->getMenuitemsHierarchy(0,' `id_menu` = '.$menu['id_menu'].' AND `menu_item_status` = 1');
+      if($menu['menu_type'] == "main_menu") {
+          $menuContent = $this->_getMainMenuItemsNestableRecursiveList($menuItemsHirarchy,$site['site_slug'],0,1);
+      }
+    }
+
+    $out .= '<div class="col col-md-8 col-sm-8" >';
+      $out .= '<div class="dd" id="nestable">';
+        $out .= $menuContent;
+      $out .= '</div>';
+      $out .= '<input type="hidden" name="menu_order" id="nestable-output" />';
+    $out .= '</div>'; // col
+
+    $out .= '<div class="col col-md-4 col-sm-4" id="menu_item_details_cont" style="border-left:2px solid #ccc;">';
+    $out .= '</div>'; // col
+
+    exit($out);
+  }
+
+  public function getEditMenuFormAction() {
+    $layout = $this->_helper->layout();
+    $layout->disableLayout();
+    $this->_helper->viewRenderer->setNoRender();
+
+    $request = $this->getRequest();
+    if(!$request->isPost()) exit('Could not find any data.');
+    $post = $request->getPost();
+    if(!isset($post['id_site']) || !$post['id_site']) exit('Could not fetch site details.');
+    if(!isset($post['id_menu_item']) || !$post['id_menu_item']) exit('Could not fetch menu details.');
+
+    $modelSites = new Application_Model_DbTable_Composer();
+    $modelSites->setTableName('sites');
+    $modelSites->setIdColumn('id_site');
+    $site = $modelSites->getRowByCondition(' `id_site` = "'.$post['id_site'].'"');
+    if(!$site) exit('Could not fetch site details.');
+
+    $modelMenuItems = new Application_Model_DbTable_Menuitems();
+    $menuItem = $modelMenuItems->getRowById($post['id_menu_item']);
+    if(!$menuItem) exit('Could not fetch menu item details.');
+
+    $out = '<h4>Edit menu item <a href="" class="btn bg-yellow btn-xs pull-right" target="_blank"><i class="fa fa-link"></i> View page</a></h4>';
+
+    $out .= '<div class="form-group">';
+      $out .= '<label>Title</label>';
+      $out .= '<input name="title" id="title" class="form-control" placeholder="Title" type="text" value="'.$menuItem['title'].'">';
+    $out .= '</div>';
+
+    $out .= '<div class="form-group">';
+      $out .= '<label>Open </label>';
+      $out .= '<select class="form-control" name="target" id="target">';
+        $out .= '<option value="" ';
+          if($menuItem['target'] == "") $out .= 'selected="selected"';
+        $out .= '>In same window</option>';
+
+        $out .= '<option value="_blank" ';
+          if($menuItem['target'] == "_blank") $out .= 'selected="selected"';
+        $out .= '>In new window</option>';
+      $out .= '</select>';
+    $out .= '</div>';
+
+    $out .= '<div class="form-group">';
+      $out .= '<label>Link Type</label>';
+      $out .= '<select class="form-control link_type_specifier_input" name="link_type" id="link_type-'.$menuItem['id_menu_item'].'">';
+        $out .= '<option value=""';
+          if($menuItem['link_type'] == "") $out .= 'selected="selected"';
+        $out .= '>Select type</option>';
+
+        $out .= '<option value="internal_page_link"';
+          if($menuItem['link_type'] == "internal_page_link") $out .= 'selected="selected"';
+        $out .= '>Link to same page</option>';
+
+        $out .= '<option value="page_link"';
+          if($menuItem['link_type'] == "page_link") $out .= 'selected="selected"';
+        $out .= '>Link to another page</option>';
+
+        $out .= '<option value="external"';
+          if($menuItem['link_type'] == "external") $out .= 'selected="selected"';
+        $out .= '>External link</option>';
+      $out .= '</select>';
+    $out .= '</div>';
+
+    $out .= '<div class="" id="menu_item_attribute_container">';
+      if($menuItem['link_type'] == "internal_page_link") {
+        $out .= '<div class="form-group">';
+          $out .= '<label>Target Id</label>';
+          $out .= '<input name="link_type_attribute" id="link_type_attribute" class="form-control" type="text" value="'.$menuItem['internal_target_name'].'">';
+        $out .= '</div>';
+      } else if($menuItem['link_type'] == "external") {
+        $out .= '<div class="form-group">';
+          $out .= '<label>External Link</label>';
+          $out .= '<input name="link_type_attribute" id="link_type_attribute" class="form-control" type="text" value="'.$menuItem['external_link'].'">';
+        $out .= '</div>';
+      } else if($menuItem['link_type'] == "page_link") {
+        $modelPages = new Application_Model_DbTable_Composer();
+        $modelPages->setTableName('pages');
+        $modelPages->setIdColumn('id_page');
+        $pages = $modelPages->getAll(' WHERE `id_site` = "'.$site['id_site'].'" AND `page_status` = 1 ');
+
+        $out .= '<div class="form-group">';
+          $out .= '<label>Page</label>';
+          $out .= '<select name="link_type_attribute" id="link_type_attribute" class="form-control">';
+            if($pages) {
+              foreach($pages as $page) {
+                $out .= '<option value="'.$page['id_page'].'"';
+                if(isset($menuItem['page_id']) && $menuItem['page_id'] == $page['id_page'] ) $out .= ' selected="selected"';
+                $out .= '>'.$page['page_title'].'</option>';
+              }
+            }
+          $out .= '</select>';
+        $out .= '</div>';
+      }
+    $out .= '</div>';
+
+    exit($out);
+  }
+
+  public function getLinktypeSpecifierInputAction() {
+    $layout = $this->_helper->layout();
+    $layout->disableLayout();
+    $this->_helper->viewRenderer->setNoRender();
+
+    $request = $this->getRequest();
+    if(!$request->isPost()) exit('Could not find any data.');
+    $post = $request->getPost();
+    if(!isset($post['id_site']) || !$post['id_site']) exit('Could not fetch site details.');
+
+    $modelSites = new Application_Model_DbTable_Composer();
+    $modelSites->setTableName('sites');
+    $modelSites->setIdColumn('id_site');
+    $site = $modelSites->getRowByCondition(' `id_site` = "'.$post['id_site'].'"');
+    if(!$site) exit('Could not fetch site details.');
+
+    if($post['id_menu_item']) {
+      $modelMenuItems = new Application_Model_DbTable_Menuitems();
+      $menuItem = $modelMenuItems->getRowById($post['id_menu_item']);
+      if(!$menuItem) exit('Could not fetch menu item details.');
+    }
+
+    $linkType = (isset($post['link_type']) && $post['link_type']) ? $post['link_type'] : '';
+
+    if($linkType == "internal_page_link") {
+      $attributeValue = (isset($menuItem['internal_target_name']) && $menuItem['internal_target_name']) ? $menuItem['internal_target_name'] : '';
+      $out .= '<div class="form-group">';
+        $out .= '<label>Target Id</label>';
+        $out .= '<input name="link_type_attribute" id="link_type_attribute" class="form-control" type="text" value="'.$attributeValue.'">';
+      $out .= '</div>';
+    } else if($linkType == "external") {
+      $attributeValue = (isset($menuItem['external_link']) && $menuItem['external_link']) ? $menuItem['external_link'] : '';
+      $out .= '<div class="form-group">';
+        $out .= '<label>External Link</label>';
+        $out .= '<input name="link_type_attribute" id="link_type_attribute" class="form-control" type="text" value="'.$attributeValue.'">';
+      $out .= '</div>';
+    } else if($linkType == "page_link") {
+      $modelPages = new Application_Model_DbTable_Composer();
+      $modelPages->setTableName('pages');
+      $modelPages->setIdColumn('id_page');
+      $pages = $modelPages->getAll(' WHERE `id_site` = "'.$site['id_site'].'" AND `page_status` = 1 ');
+
+      $out .= '<div class="form-group">';
+        $out .= '<label>Page</label>';
+        $out .= '<select name="link_type_attribute" id="link_type_attribute" class="form-control">';
+          if($pages) {
+            foreach($pages as $page) {
+              $out .= '<option value="'.$page['id_page'].'"';
+              if(isset($menuItem['page_id']) && $menuItem['page_id'] == $page['id_page'] ) $out .= ' selected="selected"';
+              $out .= '>'.$page['page_title'].'</option>';
+            }
+          }
+        $out .= '</select>';
+      $out .= '</div>';
+    } else {
+      $out .= '<div class="form-group">';
+        $out .= '<label>Link</label>';
+        $out .= '<input name="link_type_attribute" id="link_type_attribute" class="form-control" type="text" value="">';
+      $out .= '</div>';
+    }
+
+    exit($out);
+  }
+
   ////////////////////////////////////////////////////////////////////
-  //////////////   HELPER FYNCTIONS //////////////////////////////////
+  //////////////   HELPER FUNCTIONS //////////////////////////////////
   ////////////////////////////////////////////////////////////////////
+
+  public function _getMainMenuItemsNestableRecursiveList($menUItems,$siteSlug,$isDropdownMenu=0) {
+    $out = '';
+    $mainItemClass = 'dd-list';
+    $mainItemId = ($isFirstItem == 1)?'nestable':'';
+
+    $out .= '<ol class="'.$mainItemClass.'">';
+    if($menUItems) {
+      $defaultActiveClass = '';
+      $defaultItemClass = 'dd-item dd3-item';
+      $addOnClass = '';
+
+      foreach($menUItems as $item) {
+        $out .= '<li class="'.$defaultItemClass.' '.$addOnClass.'" data-id="'.$item['id_menu_item'].'">';
+          $out .= '<div class="dd-handle dd3-handle"></div>';
+          $out .= '<div class="dd3-content">'.$item['title'];
+            $out .= '<div class="btn-group menu-item-edit-control">';
+  						$out .=	'<button id="btn_view_menu_item-'.$item['id_menu_item'].'" type="button" class="btn_view_menu_item btn bg-navy btn-xs"><i class="fa fa-eye"></i> view</button>';
+              $out .=	'<button id="btn_delete_menu_item-'.$item['id_menu_item'].'" type="button" class="btn_delete_menu_item btn bg-navy btn-xs"><i class="fa fa-trash"></i> delete</button>';
+            $out .=	'</div>';
+          $out .= '</div>';
+          if(isset($item['sub_menu']) && $item['sub_menu']) $out .= $this->_getMainMenuItemsNestableRecursiveList($item['sub_menu'],$siteSlug,1);
+
+        $out .= '</li>';
+      }
+      $out .= '</ol>';
+      return $out;
+
+    } else return false;
+  }
+
+  public function _validateFormCreation($post) {
+    $erorrs = array();
+    if(!isset($post['elements']) || !$post['elements']) {
+      $errors['elements'] = 'No form elements found.';
+    } else {
+      foreach($post['elements'] as $key => $element) {
+        if(!isset($element['element_type']) && $element['element_type'] ) {
+          $errors['element_'+$key] = 'No element type specified for element '+$key;
+        }
+      }
+    }
+
+    return $errors;
+  }
 
   public function _validateMenuCreation($post) {
     $errors = array();
@@ -760,67 +1064,6 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if(!isset($post['link_type']) || !$post['link_type']) $errors['link_type'] = 'Please select a link type.';
     if(!isset($post['link_type_attribute']) || !$post['link_type_attribute']) $errors['link_type_attribute'] = 'Please enter link item target.';
     return $errors;
-  }
-
-  function _getForm($form,$method,$action) {
-    $out = '';
-    $modelFormElements = new Application_Model_DbTable_Composer();
-    $modelFormElements->setTableName('form_elements');
-    $modelFormElements->setIdColumn('id_form_element');
-    $formElements = $modelFormElements->getAll(' WHERE `id_form` = "'.$form['id_form'].'" AND `element_status` = 1');
-    if($formElements) {
-      $out = '<form role="form" method="'.$method.'" action="'.$action.'" id="'.$form['id_form'].'">';
-      $out .= '<input type="hidden" name="id_form" value="'.$form['id_form'].'" />';
-      foreach($formElements as $formElement) {
-        $elementHtml = '';
-        switch ($formElement['element_type']) {
-          case 'text':
-              $elementHtml .= '<div class="form-group">';
-                $elementHtml .= '<label>'.$formElement['element_name'].'</label>';
-                $elementHtml .= '<input class="form-control '.$formElement['element_class'].'" type="text" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
-                if($formElement['placeholder']) $elementHtml .= 'placeholder="'.$formElement['placeholder'].'"';
-                if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
-                $elementHtml .= '/>';
-              $elementHtml .= '</div>';
-            break;
-            case 'text_area':
-                $elementHtml .= '<div class="form-group">';
-                  $elementHtml .= '<label>'.$formElement['element_name'].'</label>';
-                  $elementHtml .= '<textarea class="form-control '.$formElement['element_class'].'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
-                  $elementHtml .= 'placeholder="'.$formElement['placeholder'].'" >';
-                  if($formElement['default_value']) $elementHtml .= $formElement['default_value'];
-                  $elementHtml .= '</textarea>';
-                $elementHtml .= '</div>';
-              break;
-              case 'submit':
-                  $elementClass = 'btn-default';
-                  if($formElement['element_class']) $elementClass = $formElement['element_class'];
-                  $elementHtml .= '<div class="form-group">';
-                    $elementHtml .= '<input type="submit" class="btn '.$elementClass.'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
-                    if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
-                    $elementHtml .= '/>';
-                  $elementHtml .= '</div>';
-                break;
-                case 'button':
-                    $elementClass = 'btn-default';
-                    if($formElement['element_class']) $elementClass = $formElement['element_class'];
-                    $elementHtml .= '<div class="form-group">';
-                      $elementHtml .= '<input type="button" class="btn '.$elementClass.'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
-                      if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
-                      $elementHtml .= '/>';
-                    $elementHtml .= '</div>';
-                  break;
-          default:
-            # code...
-            break;
-        }
-
-        $out .= $elementHtml;
-      }
-      $out .= '</form>';
-    }
-
-    return $out;
   }
 
   function _getImage($media,$outputType='image',$maxHeight='',$maxWidth='') {
@@ -946,7 +1189,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if(!isset($post['theme_slug']) || !$post['theme_slug']) $errors['theme_slug'] = "Please enter theme identifier";
     else if(!$modelTheme->isUnique('theme_slug',$post['theme_slug'])) $errors['theme_slug'] = "This theme identifier already exist.";
     if(!isset($post['id_category']) || !$post['id_category']) $errors['id_category'] = "Please select a category.";
-    
+
     $allowedExts = array("zip");
     if(!isset($_FILES["theme_file"]) || !$_FILES["theme_file"]) {
       $errors['theme_file'] = 'Please choose a file to upload.';

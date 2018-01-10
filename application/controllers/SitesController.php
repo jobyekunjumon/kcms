@@ -181,7 +181,7 @@ class SitesController extends Zend_Controller_Action {
         $contentsCount = count($contents);
         $contents[$contentsCount]['component_id'] = $form['component_id'];
         $contents[$contentsCount]['component_type'] = 'form';
-        $contents[$contentsCount]['content'] = $this->_getForm($form,'post','');
+        $contents[$contentsCount]['content'] = $this->utilities->getForm($form,'post','');
       }
     }
     //$this->utilities->debug($site);$this->utilities->debug($page);$this->utilities->debug($contents); exit();
@@ -298,7 +298,7 @@ class SitesController extends Zend_Controller_Action {
       $out .=  ' />';
       return $out;
     }
-    
+
     // create image tag
     $out = '<img src="'.$mediaUrl.'"';
       if(isset($media['altered_alt_text'])) $out .= 'alt="'.$media['altered_alt_text'].'"';

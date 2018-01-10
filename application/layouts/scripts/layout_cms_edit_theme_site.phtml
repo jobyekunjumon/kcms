@@ -5,9 +5,12 @@ if(!$pageContent) exit('Something went wrong while fetching site data. Please tr
 $addOnCss = '<link rel="stylesheet" href="'.$this->baseUrl().'/themes/'.$this->theme['theme_slug'].'/css/style.css">';
 $addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_alte/bower_components/font-awesome/css/font-awesome.min.css">';
 $addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/style.css">';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/sortable.css">';
 $addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_alte/dist/css/AdminLTE.min.css">';
 
 $addOnJs = '<script src="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/editor.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/jquery.nestable.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/menu-editor.js"></script>';
 $addOnJs .= '<script src="'.$this->baseUrl().'/ui_alte/bower_components/ckeditor/ckeditor.js"></script>';
 
 $addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_backoffice/vendor/bootstrap-datepicker-master/dist/css/bootstrap-datepicker3.min.css" />';
@@ -53,7 +56,7 @@ $addOnContent =  '<div class="modal fade" id="modal-add">
 																		<option value="menu" >Menu</option>
 																		<option value="slider" >Slider</option>
 																		<option value="form" >Form</option>
-																		<option value="text" >Map</option>
+																		<option value="map" >Google Map</option>
 																	</select>
 																</div>
 																<label class="col-sm-6 control-label" >Specific to this page only ? <input type="checkbox" name="page_specific" id="page_specific" value="1" /></label>
@@ -68,6 +71,36 @@ $addOnContent =  '<div class="modal fade" id="modal-add">
 												<div class="modal-footer">
 													<button type="button"  class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
 													<button type="button" class="btn btn-sm  btn-info" id="btn_submit_add_content"><i class="fa fa-save"></i> Save changes</button>
+												</div>
+											</div>
+										</div>
+									</div>';
+
+$addOnContent .=  '<div class="modal fade" id="modal_edit_menu">
+										<div id="" class="modal-dialog modal-lg">
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+													<span aria-hidden="true">&times;</span></button>
+													<h4 class="modal-title" id="modal_title_edit_menu" >Edit Menu</h4>
+												</div>
+												<div class="modal-body" id="modal_add_body">
+													<form role="form" id="frmEditMenu" action="" method="post">
+														<input type="hidden" name="component_id" id="component_id" value="" />
+														<input type="hidden" name="id_site" id="id_site" value="'.$this->site['id_site'].'" />
+														<input type="hidden" name="id_page" id="id_page" value="'.$this->page['id_page'].'" />
+														<input type="hidden" name="action" id="action" value="edit_menu" />
+
+							              <div class="row content_form margin-top-md" id="content_form_edit_menu" >
+														</div>
+
+							            </form>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-sm  btn-info pull-left" id="btn_submit_edit_menu"><i class="fa fa-plus"></i> Add new menu item</button>
+													<button type="button" class="btn btn-sm  btn-info pull-left" id="btn_submit_edit_menu"><i class="fa fa-plus"></i> Add new page</button>
+													<button type="button"  class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+													<button type="button" class="btn btn-sm  btn-info" id="btn_submit_edit_menu"><i class="fa fa-save"></i> Save changes</button>
 												</div>
 											</div>
 										</div>
@@ -135,8 +168,8 @@ if(isset($this->contents) && $this->contents) {
 	foreach($this->contents as $content ) {
 		$componentId = str_replace(';','',$content['component_id']);
 		$placeHolderContent = '<div class="editable_update" >';
-			$placeHolderContent .= '<div class="btn-group edit-control">
-																<button id="edit-'.$componentId.'" type="button" class="btn_edit_content btn bg-navy btn-flat btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> EDIT</button>
+			$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$content['content_type'].'_'.$content['id_content'].'">
+																<button id="btn_edit_'.$content['content_type'].'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$content['content_type'].' btn bg-navy btn-flat btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> EDIT</button>
 															</div>';
 			$placeHolderContent .= stripslashes($content['content']);
 		$placeHolderContent .= '</div>';

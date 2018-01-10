@@ -11,6 +11,13 @@ public function setIdColumn($idColumn) {
   $this->identityColumn = $idColumn;
 }
 
+public function execute($sql) {
+  if(!$sql) return false;
+  $dbAdapter = Zend_Db_Table::getDefaultAdapter();
+  $res = $dbAdapter->query($sql);
+  return $res;
+}
+
     function isUnique($field,$value , $extra='') {
 	    $where = ' `'.$field.'` = "'.$value.'"';
 		$where .= $extra;

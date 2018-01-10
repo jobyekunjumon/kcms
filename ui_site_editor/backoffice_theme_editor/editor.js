@@ -18,7 +18,7 @@ $(document).on('click','.btn_add_content',function(){
 
 $(document).on('change','#component_type',function(){
   var componentType = $(this).val();
-  if(componentType == 'slider' || componentType == 'html' || componentType == 'menu') {
+  if(componentType == 'slider' || componentType == 'html' || componentType == 'menu' || componentType == 'form' ) {
     $('#modal_add_content').addClass('modal-lg');
   } else {
     $('#modal_add_content').removeClass('modal-lg');
@@ -103,10 +103,96 @@ function getInputForm(componentType) {
         out += '<textarea name="content_input"  class="form-control"></textarea>';
       out += '</div>';
       break;
+    case 'map':
+        out += '<div class="form-group">';
+          out += '<label >Add map iFrame code</label>';
+          out += '<textarea name="content_input"  class="form-control"></textarea>';
+        out += '</div>';
+        break;
     case 'html':
       out += '<div class="form-group">';
         out += '<label >Add html</label>';
         out += '<textarea name="content_input" id="content_input_html" class="form-control"></textarea>';
+      out += '</div>';
+      break;
+    case 'form':
+      out += '<div class="row">';
+        out += '<div class="col-sm-4">';
+          out += '<div class="form-group">';
+            out += '<input type="text" name="form_name" id="form_name" class="form-control" placeholder="Form Name" />';
+            out += '</select>';
+          out += '</div>';
+        out += '</div>'; // col 6
+
+        out += '<div class="col-sm-4">';
+          out += '<div class="form-group">';
+            out += '<select class="form-control col-sm-6" name="form_type" id="form_type" >';
+              out += '<option value="" >Select form type</option>';
+              out += '<option value="contact_form" >Contact form</option>';
+              out += '<option value="signup_form" >Signup form</option>';
+              out += '<option value="login_form" >Login form</option>';
+              out += '<option value="newsletter_form" >News letter subscription</option>';
+              out += '<option value="other_form" >Other</option>';
+            out += '</select>';
+          out += '</div>';
+        out += '</div>'; // col 6
+
+        out += '<div class="col-sm-4">';
+          out += '<div class="form-group">';
+            out += '<select class="form-control col-sm-6" name="data_handler" id="menu_type" id="data_handler">';
+              out += '<option value="" >How to handle data ?</option>';
+              out += '<option value="email" >Send email to admin</option>';
+              out += '<option value="save" >Save to database</option>';
+              out += '<option value="save_and_email" >Email and save to database</option>';
+            out += '</select>';
+          out += '</div>';
+        out += '</div>'; // col 6
+
+      out += '</div>'; // row
+
+      out += '<div class="" id="">';
+        out += '<div class="row" >';
+          out += '<div class="col-sm-12">';
+            out += '<h4>Add form items</h4>';
+          out += '</div>';// col
+        out += '</div>';// row
+      out += '</div>';
+      var formElemetCount = 1;
+      out += '<div class="form_items_cont" id="form_items_cont">';
+
+        out += '<div class="row form_item_row" id="form_item_row_'+formElemetCount+'" style="margin-bottom:20px;">';
+          out += '<div class="col-sm-2">';
+            out += '<input type="text" name="elements['+formElemetCount+'][element_name]" id="element_name_'+formElemetCount+'" class="form-control" placeholder="Name" />';
+          out += '</div>';// col
+          out += '<div class="col-sm-2">';
+            out += '<select class="form-control" name="elements['+formElemetCount+'][element_type]" id="element_type_'+formElemetCount+'">';
+              out += '<option value="text">Text box</option>';
+              out += '<option value="textarea">Text Area</option>';
+              out += '<option value="submit">Submit Button</option>';
+              out += '<option value="cancel">Cancel Button</option>';
+              out += '<option value="button">Normal Button</option>';
+            out += '</select>';
+          out += '</div>';// col
+
+          out += '<div class="col-sm-3">';
+            out += '<input type="text" name="elements['+formElemetCount+'][default_value]" id="default_value_'+formElemetCount+'" class="form-control" placeholder="Default value" />';
+          out += '</div>';// col
+
+          out += '<div class="col-sm-4">';
+            out += '<label >Validations : </label> &nbsp;&nbsp;&nbsp;&nbsp;';
+            out += '<label >Required <input type="checkbox" name="elements['+formElemetCount+'][validations][]" value="required" id="validation_required_'+formElemetCount+'" checked="checked" /></label>&nbsp;&nbsp;&nbsp;&nbsp;';
+            out += '<label >Email <input type="checkbox" name="elements['+formElemetCount+'][validations][]" value="email" id="validation_email_'+formElemetCount+'"  /></label>';
+          out += '</div>';// col
+
+        out += '</div>';// row
+
+      out += '</div>';
+
+      out += '<div class="row">';
+        out += '<div class="col-sm-12">';
+          out += '<input type="hidden" name="form_element_count" id="form_element_count" value="'+formElemetCount+'" />';
+          out += '<button type="button" class="btn btn-sm btn-warning" id="btn_add_form_element"><i class="fa fa-plus"></i> Add Element</button>';
+        out += '</div>';
       out += '</div>';
       break;
     case 'menu':
@@ -171,6 +257,48 @@ function getInputForm(componentType) {
 
   return out;
 }
+
+$(document).on('click','#btn_add_form_element',function(){
+  var formElemetCount = parseInt($('#form_element_count').val())+1;
+  var out ='';
+  out += '<div class="row form_item_row" id="form_item_row_'+formElemetCount+'" style="margin-bottom:20px;">';
+    out += '<div class="col-sm-2">';
+      out += '<input type="text" name="elements['+formElemetCount+'][element_name]" id="element_name_'+formElemetCount+'" class="form-control" placeholder="Name" />';
+    out += '</div>';// col
+    out += '<div class="col-sm-2">';
+      out += '<select class="form-control" name="elements['+formElemetCount+'][element_type]" id="element_type_'+formElemetCount+'">';
+        out += '<option value="text">Text box</option>';
+        out += '<option value="textarea">Text Area</option>';
+        out += '<option value="submit">Submit Button</option>';
+        out += '<option value="cancel">Cancel Button</option>';
+        out += '<option value="button">Normal Button</option>';
+      out += '</select>';
+    out += '</div>';// col
+
+    out += '<div class="col-sm-3">';
+      out += '<input type="text" name="elements['+formElemetCount+'][default_value]" id="default_value_'+formElemetCount+'" class="form-control" placeholder="Default value" />';
+    out += '</div>';// col
+
+    out += '<div class="col-sm-4">';
+      out += '<label >Validations : </label> &nbsp;&nbsp;&nbsp;&nbsp;';
+      out += '<label >Required <input type="checkbox" name="elements['+formElemetCount+'][validations][]" value="required" id="validation_required_'+formElemetCount+'" checked="checked" /></label>&nbsp;&nbsp;&nbsp;&nbsp;';
+      out += '<label >Email <input type="checkbox"name="elements['+formElemetCount+'][validations][]" value="email"  id="validation_email_'+formElemetCount+'"  /></label>';
+    out += '</div>';// col
+
+    out += '<div class="col-sm-1">';
+      out += '<button type="button" class="btn btn-sm btn-danger btn_remove_form_element" id="btn_remove_form_element-'+formElemetCount+'"><i class="fa fa-times"></i></button>';
+    out += '</div>';// col
+
+  out += '</div>';// row
+  $('#form_items_cont').append(out);
+  $('#form_element_count').val(formElemetCount);
+});
+
+$(document).on('click','.btn_remove_form_element',function(){
+  var formElemetCount = $(this).attr('id').split('-')[1];
+  $('#form_item_row_'+formElemetCount).remove();
+  $('#form_element_count').val((formElemetCount-1));
+});
 
 $(document).on('change','#thumbnail',function(){
   $('#media_size_width').val('');

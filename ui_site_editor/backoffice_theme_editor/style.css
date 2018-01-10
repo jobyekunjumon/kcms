@@ -63,7 +63,16 @@ body {
 	.media_image_selected {
 		border:2px solid #ff0000;
 	}
-  
+  .menu-item-edit-control {
+    position: absolute;
+    right: 0;
+    margin-right: 10px;
+    display:none;
+  }
+  .dd3-content:hover .menu-item-edit-control{
+    display: block;
+    margin-top:-20px;
+  }
 .grid-zero div[class*="col-"] {
   padding: 0px; }
 

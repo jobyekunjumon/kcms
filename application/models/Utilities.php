@@ -12,6 +12,70 @@ class Application_Model_Utilities {
             echo $data;
         echo '</pre>';
     }
+
+
+function getForm($form,$method,$action) {
+  $out = '';
+  $modelFormElements = new Application_Model_DbTable_Composer();
+  $modelFormElements->setTableName('form_elements');
+  $modelFormElements->setIdColumn('id_form_element');
+  $formElements = $modelFormElements->getAll(' WHERE `id_form` = "'.$form['id_form'].'" AND `element_status` = 1  ORDER BY `id_form_element`');
+  if($formElements) {
+    $out = '<form role="form" method="'.$method.'" action="'.$action.'" id="'.$form['id_form'].'">';
+    $out .= '<input type="hidden" name="id_form" value="'.$form['id_form'].'" />';
+    foreach($formElements as $formElement) {
+      $elementHtml = '';
+      switch ($formElement['element_type']) {
+        case 'text':
+            $elementHtml .= '<div class="form-group">';
+              $elementHtml .= '<label>'.$formElement['element_name'].'</label>';
+              $elementHtml .= '<input class="form-control '.$formElement['element_class'].'" type="text" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
+              if($formElement['place_holder']) $elementHtml .= 'placeholder="'.$formElement['place_holder'].'"';
+              if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
+              $elementHtml .= '/>';
+            $elementHtml .= '</div>';
+          break;
+          case 'textarea':
+              $elementHtml .= '<div class="form-group">';
+                $elementHtml .= '<label>'.$formElement['element_name'].'</label>';
+                $elementHtml .= '<textarea class="form-control '.$formElement['element_class'].'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
+                if($formElement['place_holder']) $elementHtml .= 'place_holder="'.$formElement['place_holder'].'" >';
+                if($formElement['default_value']) $elementHtml .= $formElement['default_value'];
+                $elementHtml .= '</textarea>';
+              $elementHtml .= '</div>';
+            break;
+            case 'submit':
+                $elementClass = 'btn-default';
+                if($formElement['element_class']) $elementClass = $formElement['element_class'];
+                $elementHtml .= '<div class="form-group">';
+                  $elementHtml .= '<input type="submit" class="btn '.$elementClass.'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
+                  if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
+                  $elementHtml .= '/>';
+                $elementHtml .= '</div>';
+              break;
+              case 'button':
+                  $elementClass = 'btn-default';
+                  if($formElement['element_class']) $elementClass = $formElement['element_class'];
+                  $elementHtml .= '<div class="form-group">';
+                    $elementHtml .= '<input type="button" class="btn '.$elementClass.'" name="form_element_'.$formElement['id_form_element'].'" id="form_element_'.$formElement['id_form_element'].'" ';
+                    if($formElement['default_value']) $elementHtml .= 'value="'.$formElement['default_value'].'"';
+                    $elementHtml .= '/>';
+                  $elementHtml .= '</div>';
+                break;
+        default:
+          # code...
+          break;
+      }
+
+      $out .= $elementHtml;
+    }
+    $out .= '</form>';
+  }
+
+  return $out;
+}
+
+
     public function getMediaUrl($media,$fullyQualified = 0, $thumbnail='') {
   		if(!isset($media) || !$media) return false;
 
