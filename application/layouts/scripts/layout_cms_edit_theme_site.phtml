@@ -75,7 +75,34 @@ $addOnContent =  '<div class="modal fade" id="modal-add">
 											</div>
 										</div>
 									</div>';
-
+$addOnContent .=  '<div class="modal fade" id="modal-delete-confirm">
+										<div id="modal_delete_content" class="modal-dialog ">
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+													<span aria-hidden="true">&times;</span></button>
+													<h4 class="modal-title">Delete Content</h4>
+												</div>
+												<div class="modal-body" id="modal_delete_content_body">
+													<div class="row">
+														<input type="hidden" name="id_content_to_delete" id="id_content_to_delete" value="" />
+														<input type="hidden" name="type_content_to_delete" id="type_content_to_delete" value="" />
+														<div class="col col-sm-12 col-md-12">
+															<div class="callout callout-warning">
+																<h4>Please confirm deletion</h4>
+																<p>If you delete this content, it can\'t be retrieved. Please confirm.</p>
+															</div>
+														</div>
+													</div>
+												</div>
+												<div class="modal-footer">
+													<div class="pull-left" id="btn_delete_content_status_cont"></div>
+													<button type="button"  class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+													<button type="button" class="btn btn-sm  btn-danger" id="btn_confirm_deletion"><i class="fa fa-check"></i> Confirm Deletion</button>
+												</div>
+											</div>
+										</div>
+									</div>';
 $addOnContent .=  '<div class="modal fade" id="modal_edit_menu">
 										<div id="" class="modal-dialog modal-lg">
 											<div class="modal-content">
@@ -89,18 +116,80 @@ $addOnContent .=  '<div class="modal fade" id="modal_edit_menu">
 														<input type="hidden" name="component_id" id="component_id" value="" />
 														<input type="hidden" name="id_site" id="id_site" value="'.$this->site['id_site'].'" />
 														<input type="hidden" name="id_page" id="id_page" value="'.$this->page['id_page'].'" />
+														<input type="hidden" name="id_menu" id="id_menu" value="" />
 														<input type="hidden" name="action" id="action" value="edit_menu" />
-
-							              <div class="row content_form margin-top-md" id="content_form_edit_menu" >
+														<div class="row" >
+															<div class="col col-md-12 col-sm-12">
+																<div class="callout callout-warning">
+																	<p>Drag the menu items to arrange the ordering. Click on edit button to edit menu item properties. Click on delete butto to delete ana item. Please
+																		 be aware that, if you delete a menu item with sub menu items, the sub menu items will be also deleted.</p>
+																</div>
+															</div>
+														</div>
+							              <div class="row content_form" id="content_form_edit_menu" >
 														</div>
 
 							            </form>
 												</div>
 												<div class="modal-footer">
-													<button type="button" class="btn btn-sm  btn-info pull-left" id="btn_submit_edit_menu"><i class="fa fa-plus"></i> Add new menu item</button>
-													<button type="button" class="btn btn-sm  btn-info pull-left" id="btn_submit_edit_menu"><i class="fa fa-plus"></i> Add new page</button>
+													<button type="button" id="btn_update_menu_order" class="btn btn-success btn-sm pull-left"><i class="fa fa-save"></i> Update menu order</button>
+													<div class="pull-left" id="btn_update_menu_order_status_cont"></div>
+													<button type="button" class="btn btn-sm  btn-default " id="btn_add_menu_item"><i class="fa fa-plus"></i> Add new menu item</button>
+													<button type="button" class="btn btn-sm  btn-default " id="btn_add_page"><i class="fa fa-plus"></i> Add new page</button>
 													<button type="button"  class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-													<button type="button" class="btn btn-sm  btn-info" id="btn_submit_edit_menu"><i class="fa fa-save"></i> Save changes</button>
+												</div>
+											</div>
+										</div>
+									</div>';
+$addOnContent .=  '<div class="modal fade" id="modal_add_pages">
+										<div id="" class="modal-dialog">
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+													<span aria-hidden="true">&times;</span></button>
+													<h4 class="modal-title" id="modal_title_add_page" >Add Page</h4>
+												</div>
+												<div class="modal-body" id="modal_add_body">
+													<form role="form" id="frmEditMenu" action="" method="post">
+														<input type="hidden" name="action" id="action" value="add_page" />
+
+							              <div class="row content_form" id="content_form_add_page" >
+															<div class="col col-sm-12 col-md-12">
+																<div class="form-group">
+																	<label>Page Name</label>
+																	<input type="text" name="page_title" id="page_title" class="form-control" />
+																</div>
+																<div class="form-group">
+																	<label>Add some keywords to recognise your page in search engine.</label>
+																	<textarea name="keywords" id="keywords" class="form-control" placeholder="Keyword 1, keyword 2"></textarea>
+																</div>
+																<div class="form-group">
+																	<input type="hidden" name="page_layout" id="page_layout" value="" />
+																	<label>Select a layout</label>
+																	<div class="row layout_selector_container" id="layout_selector_container">';
+																		if(isset($this->layoutFiles) && $this->layoutFiles) {
+																			foreach($this->layoutFiles as $layoutFile) {
+																				$fileNameComponents = explode('/',$layoutFile);
+																			  $layoutFile = end($fileNameComponents);
+																			  $layoutFileName = str_replace('.phtml','',$layoutFile);
+																			  $layoutImage = $this->baseUrl().'/themes/'.$this->theme['theme_slug'].'/'.$layoutFileName.'.png';
+																				$addOnContent .= '<div class="clo col-sm-2 col-md-3 layout_image_wrapper" id="'.$layoutFileName.'" >';
+																					$addOnContent .= '<img src="'.$layoutImage.'" alt="'.$layoutFileName.'" />';
+																					$addOnContent .= '<label>'.$layoutFileName.'</label>';
+																				$addOnContent .= '</div>';
+																			}
+																		}
+									$addOnContent .='</div>
+																</div>
+															</div>
+														</div>
+
+							            </form>
+												</div>
+												<div class="modal-footer">
+													<div class="pull-left" id="add_page_status_cont"></div>
+													<button type="button"  class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+													<button type="button" id="btn_submit_add_page" class="btn btn-success btn-sm"><i class="fa fa-save"></i> Save Changes</button>
 												</div>
 											</div>
 										</div>
@@ -169,7 +258,8 @@ if(isset($this->contents) && $this->contents) {
 		$componentId = str_replace(';','',$content['component_id']);
 		$placeHolderContent = '<div class="editable_update" >';
 			$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$content['content_type'].'_'.$content['id_content'].'">
-																<button id="btn_edit_'.$content['content_type'].'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$content['content_type'].' btn bg-navy btn-flat btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> EDIT</button>
+																<button id="btn_edit_'.$content['content_type'].'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$content['content_type'].' btn bg-navy btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> Edit</button>
+																<button id="btn_delete-'.$content['content_type'].'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$content['content_type'].' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
 															</div>';
 			$placeHolderContent .= stripslashes($content['content']);
 		$placeHolderContent .= '</div>';
@@ -183,7 +273,7 @@ if (isset($notRenderedPlaceHolders[0]) && $notRenderedPlaceHolders[0]) {
 		$componentId = str_replace(';','',$placeHolder);
 		$placeHolderContent = '<div class="editable" >';
 			$placeHolderContent .= '<div class="btn-group edit-control">
-																<button id="add-'.$componentId.'" type="button" class="btn_add_content btn bg-navy btn-flat btn-xs" data-toggle="modal" data-target="#modal-add"><i class="fa fa-plus"></i> ADD</button>
+																<button id="add-'.$componentId.'" type="button" class="btn_add_content btn bg-navy btn-xs" data-toggle="modal" data-target="#modal-add"><i class="fa fa-plus"></i> Add</button>
 															</div>';
 			$placeHolderContent .= $placeHolder;
 		$placeHolderContent .= '</div>';

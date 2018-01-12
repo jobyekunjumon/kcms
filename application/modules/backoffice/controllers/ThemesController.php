@@ -240,7 +240,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
                                     'page_layout' => $layoutFileName,
                                     'page_title' => ucwords(str_replace('_',' ',$layoutFileName)),
                                     'page_slug' => $layoutFileName,
-                                    'keywords' => 'Demo Site of ',
+                                    'keywords' => 'Demo Site',
                                     'page_status' => 1
                                    );
                   @$pageId = $modelPages->insertData($newPage);
@@ -628,6 +628,9 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     $theme['page_layout'] = $page['page_layout'];
     $theme['directory'] = APPLICATION_PATH.'/../themes/'.$theme['theme_slug'];
     $theme['layout_file'] = $theme['directory'].'/'.$theme['page_layout'].'.phtml';
+    // get all layouts of this theme
+    $layoutFiles = glob($theme['directory'].$themeSlug."/*.phtml");
+
 
     ///////////////////////////////////////////////////////////////////////////////////
     //                          GET  CONTENTS                                        //
@@ -714,11 +717,12 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
 
       foreach($menu as $menuEntry) {
         $menuContent = '';
-        $menuItemsHirarchy = $modelMenuItems->getMenuitemsHierarchy(0,' `id_menu` = '.$menuEntry['id_menu'].' AND `menu_item_status` = 1');
         if($menuEntry['menu_type'] == "main_menu") {
-            $menuContent = $this->_getMainMenuItemsRecursiveList($menuItemsHirarchy,$site['site_slug'],0);
+          $menuItemsHirarchy = $modelMenuItems->getMenuitemsHierarchy(0,' `id_menu` = '.$menuEntry['id_menu'].' AND `menu_item_status` = 1');
+          $menuContent = $this->_getMainMenuItemsRecursiveList($menuItemsHirarchy,$site['site_slug'],0);
         } else if($menuEntry['menu_type'] == "footer_menu") {
-          $menuContent = $this->_getFooterMenuList($menuItemsHirarchy,$site['site_slug']);
+          $menuItems = $modelMenuItems->getAll(' WHERE `id_menu` = '.$menuEntry['id_menu'].' AND `menu_item_status` = 1');
+          $menuContent = $this->_getFooterMenuList($menuItems,$site['site_slug']);
         }
 
         $contentsCount = count($contents);
@@ -773,6 +777,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if(isset($pages) && $pages) $this->view->pages = $pages;
     if(isset($theme) && $theme) $this->view->theme = $theme;
     if(isset($contents) && $contents) $this->view->contents = $contents;
+    if(isset($layoutFiles) && $layoutFiles) $this->view->layoutFiles = $layoutFiles;
   }
 
   public function getPagesSelectEntryAction() {
@@ -828,16 +833,17 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if($menu) {
       $modelMenuItems = new Application_Model_DbTable_Menuitems();
       $menuItemsHirarchy = $modelMenuItems->getMenuitemsHierarchy(0,' `id_menu` = '.$menu['id_menu'].' AND `menu_item_status` = 1');
-      if($menu['menu_type'] == "main_menu") {
-          $menuContent = $this->_getMainMenuItemsNestableRecursiveList($menuItemsHirarchy,$site['site_slug'],0,1);
-      }
+      $menuContent = $this->_getMainMenuItemsNestableRecursiveList($menuItemsHirarchy,$site['site_slug'],0,1);
+
     }
+
 
     $out .= '<div class="col col-md-8 col-sm-8" >';
       $out .= '<div class="dd" id="nestable">';
         $out .= $menuContent;
       $out .= '</div>';
       $out .= '<input type="hidden" name="menu_order" id="nestable-output" />';
+
     $out .= '</div>'; // col
 
     $out .= '<div class="col col-md-4 col-sm-4" id="menu_item_details_cont" style="border-left:2px solid #ccc;">';
@@ -855,7 +861,6 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if(!$request->isPost()) exit('Could not find any data.');
     $post = $request->getPost();
     if(!isset($post['id_site']) || !$post['id_site']) exit('Could not fetch site details.');
-    if(!isset($post['id_menu_item']) || !$post['id_menu_item']) exit('Could not fetch menu details.');
 
     $modelSites = new Application_Model_DbTable_Composer();
     $modelSites->setTableName('sites');
@@ -863,12 +868,99 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     $site = $modelSites->getRowByCondition(' `id_site` = "'.$post['id_site'].'"');
     if(!$site) exit('Could not fetch site details.');
 
+    $menuItem = array();
     $modelMenuItems = new Application_Model_DbTable_Menuitems();
-    $menuItem = $modelMenuItems->getRowById($post['id_menu_item']);
-    if(!$menuItem) exit('Could not fetch menu item details.');
+    if(isset($post['id_menu_item']) && $post['id_menu_item']) $menuItem = $modelMenuItems->getRowById($post['id_menu_item']);
+    if(!$menuItem) {
+      $menuItem['id_menu_item'] = ''; $menuItem['title'] = '';$menuItem['target'] = '';
+      $menuItem['link_type'] = ''; $menuItem['internal_target_name'] = '';$menuItem['external_link'] = '';
+      $menuItem['page_id'] = '';
+    }
 
-    $out = '<h4>Edit menu item <a href="" class="btn bg-yellow btn-xs pull-right" target="_blank"><i class="fa fa-link"></i> View page</a></h4>';
+    // process add or edit menu item
+    if(isset($post['action']) && $post['action'] == "add_menu_item") {
+      $modelPages = new Application_Model_DbTable_Composer();
+      $modelPages->setTableName('pages');
+      $modelPages->setIdColumn('id_page');
 
+      if(isset($post['id_to_edit']) && $post['id_to_edit'] && $menuItem) {
+        $menuItemPageId = 0;
+        $menuItemPageSlug = '';
+        $menuItemExternalLink = '';
+        $menuItemInternalTargetName = '';
+        if($post['link_type'] == 'page_link') {
+          $selectedPage = $modelPages->getRowById($post['link_type_attribute']);
+          if($selectedPage) {
+            $menuItemPageSlug = $selectedPage['page_slug'];
+            $menuItemPageId = $selectedPage['id_page'];
+          }
+        } else if($post['link_type'] == 'internal_page_link') {
+          $menuItemInternalTargetName = $post['link_type_attribute'];
+        } else if($post['link_type'] == 'external') {
+          $menuItemExternalLink = $post['link_type_attribute'];
+        }
+        // insert default menu item
+        $updateMenuItem = array(
+                          'id_menu' => $post['id_menu'],
+                          'title' => $post['title'],
+                          'menu_slug' => strtolower(str_replace(' ','_',$post['title'])),
+                          'target' => $post['target'],
+                          'link_type' => $post['link_type'],
+                          'page_id' => $menuItemPageId,
+                          'page_slug' => $menuItemPageSlug,
+                          'internal_target_name' => $menuItemInternalTargetName,
+                          'external_link' => $menuItemExternalLink,
+                          'menu_item_status' => 1,
+                         );
+
+        if($modelMenuItems->updateData($updateMenuItem,$post['id_to_edit'])) {
+          $menuItem = $modelMenuItems->getRowById($post['id_to_edit']);
+        }
+      } else {
+        $menuItemPageId = 0;
+        $menuItemPageSlug = '';
+        $menuItemExternalLink = '';
+        $menuItemInternalTargetName = '';
+        if($post['link_type'] == 'page_link') {
+          $selectedPage = $modelPages->getRowById($post['link_type_attribute']);
+          if($selectedPage) {
+            $menuItemPageSlug = $selectedPage['page_slug'];
+            $menuItemPageId = $selectedPage['id_page'];
+          }
+        } else if($post['link_type'] == 'internal_page_link') {
+          $menuItemInternalTargetName = $post['link_type_attribute'];
+        } else if($post['link_type'] == 'external') {
+          $menuItemExternalLink = $post['link_type_attribute'];
+        }
+        // insert default menu item
+        $newMenuItem = array('id_parent_menu_item' => 0,
+                          'id_menu' => $post['id_menu'],
+                          'title' => $post['title'],
+                          'menu_slug' => strtolower(str_replace(' ','_',$post['title'])),
+                          'target' => $post['target'],
+                          'link_type' => $post['link_type'],
+                          'page_id' => $menuItemPageId,
+                          'page_slug' => $menuItemPageSlug,
+                          'internal_target_name' => $menuItemInternalTargetName,
+                          'external_link' => $menuItemExternalLink,
+                          'menu_item_status' => 1,
+                          'sort_order' => $modelMenuItems->getNextSortOrder($post['id_menu'],0),
+                         );
+        if($newMenuItemId = $modelMenuItems->insertData($newMenuItem)){
+          $menuItem = $modelMenuItems->getRowById($newMenuItemId);
+        }
+      }
+    }
+
+    // if id_menu_item preset, get form as edit form, else as new item form
+    if($menuItem['id_menu_item']) {
+      $menuBaseUrl = $this->view->baseUrl().'/backoffice/themes/edit-theme-site';
+      $pageLink = $modelMenuItems->getMenuItemLink($menuItem,$site['site_slug'],0,$menuBaseUrl);
+      $out = '<h4>Edit menu item <a href="'.$pageLink.'" class="btn bg-aqua btn-xs pull-right" target="_blank"><i class="fa fa-link"></i> View page</a></h4>';
+    } else {
+      $out = '<h4>Add new menu item </h4>';
+    }
+    $out .= '<input type="hidden" name="id_to_edit" id="id_to_edit" value="'.$menuItem['id_menu_item'].'" />';
     $out .= '<div class="form-group">';
       $out .= '<label>Title</label>';
       $out .= '<input name="title" id="title" class="form-control" placeholder="Title" type="text" value="'.$menuItem['title'].'">';
@@ -940,6 +1032,10 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
       }
     $out .= '</div>';
 
+    $out .= '<div class="form-group">';
+      $out .= '<button type="button" id="btn_save_menu_item_changes" class="btn btn-success btn-sm" ><i class="fa fa-save" ></i> Save Chanages</button>';
+    $out .= '</div>';
+
     exit($out);
   }
 
@@ -1007,9 +1103,296 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     exit($out);
   }
 
+  public function updateMenuOrderAction() {
+    $layout = $this->_helper->layout();
+    $layout->disableLayout();
+    $this->_helper->viewRenderer->setNoRender();
+
+    $request = $this->getRequest();
+    if(!$request->isPost()) exit('Could not find any data.');
+    $post = $request->getPost();
+    if(!isset($post['id_site']) || !$post['id_site']) exit('Could not fetch site details.');
+    if(!isset($post['id_menu']) || !$post['id_menu']) exit('Could not fetch menu details.');
+    if(!isset($post['menu_order']) || !$post['menu_order']) exit('Could not find menu order.');
+
+    $modelSites = new Application_Model_DbTable_Composer();
+    $modelSites->setTableName('sites');
+    $modelSites->setIdColumn('id_site');
+    $site = $modelSites->getRowByCondition(' `id_site` = "'.$post['id_site'].'"');
+    if(!$site) exit('Could not fetch site details.');
+
+    $menuOrder = $post['menu_order'];
+    $menuOrder = (array)json_decode($menuOrder);
+    if($this->_updateMenuOrder($menuOrder,$post['id_menu'],1)) exit('1');
+    exit(0);
+  }
+
+  public function deleteMenuItemAction() {
+    $layout = $this->_helper->layout();
+    $layout->disableLayout();
+    $this->_helper->viewRenderer->setNoRender();
+
+    $request = $this->getRequest();
+    if(!$request->isPost()) exit('Could not find any data.');
+    $post = $request->getPost();
+    if(!isset($post['id_site']) || !$post['id_site']) exit('Could not fetch site details.');
+    if(!isset($post['id_menu_item']) || !$post['id_menu_item']) exit('Could not fetch menu item details.');
+
+    $modelSites = new Application_Model_DbTable_Composer();
+    $modelSites->setTableName('sites');
+    $modelSites->setIdColumn('id_site');
+    $site = $modelSites->getRowByCondition(' `id_site` = "'.$post['id_site'].'"');
+    if(!$site) exit('Could not fetch site details.');
+
+    $modelMenuItems = new Application_Model_DbTable_Menuitems();
+    if($modelMenuItems->deleteData($post['id_menu_item'])) exit('1');
+    exit('0');
+  }
+
+  public function addPageAction() {
+    $out = array();
+    $layout = $this->_helper->layout();
+    $layout->disableLayout();
+    $this->_helper->viewRenderer->setNoRender();
+
+    $request = $this->getRequest();
+    if(!$request->isPost()) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">Could not find any input data.</div>';
+      exit(json_encode($out));
+    }
+    $post = $request->getPost();
+    if(!isset($post['id_site']) || !$post['id_site']) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not fetch site details.</span>';
+      exit(json_encode($out));
+    }
+    if(!isset($post['id_menu']) || !$post['id_menu']) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not fetch menu details.</span>';
+      exit(json_encode($out));
+    }
+    if(!isset($post['page_title']) || !$post['page_title']) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Please enter a page title.</span>';
+      exit(json_encode($out));
+    }
+    if(!isset($post['page_layout']) || !$post['page_layout']) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Please select a page layout.</span>';
+      exit(json_encode($out));
+    }
+
+    $modelSites = new Application_Model_DbTable_Composer();
+    $modelSites->setTableName('sites');
+    $modelSites->setIdColumn('id_site');
+    $site = $modelSites->getRowByCondition(' `id_site` = "'.$post['id_site'].'"');
+    if(!$site) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not fetch site details.</span>';
+      exit(json_encode($out));
+    }
+
+    $modelPages = new Application_Model_DbTable_Composer();
+    $modelPages->setTableName('pages');
+    $modelPages->setIdColumn('id_page');
+    // generate page form_slug
+    $pageSlug = strtolower(str_replace(' ','-',$post['page_title']));
+    if(!$modelPages->isUnique('page_slug',$pageSlug)) {
+      $iAlt = 1;
+      while(!$modelPages->isUnique('page_slug',$pageSlug)) {
+        $pageSlug = $pageSlug.'-'.$iAlt;
+        $iAlt++;
+      }
+    }
+
+    $newPage = array('id_site' => $site['id_site'],
+                      'page_layout' => $post['page_layout'],
+                      'page_title' => addslashes($post['page_title']),
+                      'page_slug' => $pageSlug,
+                      'keywords' => 'Demo Site',
+                      'page_status' => 1
+                     );
+    if($pageId = $modelPages->insertData($newPage)) {
+      // add menu item
+      $modelMenuItems = new Application_Model_DbTable_Menuitems();
+      $newMenuItem = array('id_parent_menu_item' => 0,
+                        'id_menu' => $post['id_menu'],
+                        'title' => $post['page_title'],
+                        'menu_slug' => strtolower(str_replace(' ','_',$post['page_title'])),
+                        'target' => '',
+                        'link_type' => 'page_link',
+                        'page_id' => $pageId,
+                        'page_slug' => $pageSlug,
+                        'internal_target_name' => '',
+                        'external_link' => '',
+                        'menu_item_status' => 1,
+                        'sort_order' => $modelMenuItems->getNextSortOrder($post['id_menu'],0),
+                       );
+      if($modelMenuItems->insertData($newMenuItem)) {
+          $out['status'] = 1;
+          $out['message'] = '<span style="color:green;">&nbsp;&nbsp;<i class="fa fa-times"></i> Page created succesfully.</span>';
+          exit(json_encode($out));
+      } else {
+        $out['status'] = 0;
+        $out['message'] = '<span style="color:yellow;">&nbsp;&nbsp;<i class="fa fa-times"></i> Page created, but could not create menu item.</span>';
+        exit(json_encode($out));
+      }
+    } else {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:yellow;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not create page.</span>';
+      exit(json_encode($out));
+    }
+  }
+
+  public function deleteContentAction() {
+    $out = array();
+    $layout = $this->_helper->layout();
+    $layout->disableLayout();
+    $this->_helper->viewRenderer->setNoRender();
+
+    $request = $this->getRequest();
+    if(!$request->isPost()) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">Could not find any input data.</div>';
+      exit(json_encode($out));
+    }
+    $post = $request->getPost();
+    if(!isset($post['id_site']) || !$post['id_site']) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not fetch site details.</span>';
+      exit(json_encode($out));
+    }
+    if(!isset($post['id_content']) || !$post['id_content']) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not fetch content details.</span>';
+      exit(json_encode($out));
+    }
+    if(!isset($post['content_type']) || !$post['content_type']) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not fetch content type details.</span>';
+      exit(json_encode($out));
+    }
+
+    $modelSites = new Application_Model_DbTable_Composer();
+    $modelSites->setTableName('sites');
+    $modelSites->setIdColumn('id_site');
+    $site = $modelSites->getRowByCondition(' `id_site` = "'.$post['id_site'].'"');
+    if(!$site) {
+      $out['status'] = 0;
+      $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not fetch site details.</span>';
+      exit(json_encode($out));
+    }
+
+    switch ($post['content_type']) {
+      case 'html':
+      case 'text':
+      case 'map':
+              $modelContent = new Application_Model_DbTable_Composer();
+              $modelContent->setTableName('contents');
+              $modelContent->setIdColumn('id_content');
+              if($modelContent->deleteData($post['id_content'])) {
+                $out['status'] = 1;
+                $out['message'] = '<span style="color:green;">&nbsp;&nbsp;<i class="fa fa-check"></i> Content deleted succesfully.</span>';
+                exit(json_encode($out));
+              } else {
+                $out['status'] = 0;
+                $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not delete content. Please try again.</span>';
+                exit(json_encode($out));
+              }
+              break;
+      case 'menu':
+          $modelMenu = new Application_Model_DbTable_Composer();
+          $modelMenu->setTableName('menu');
+          $modelMenu->setIdColumn('id_menu');
+          if($modelMenu->deleteData($post['id_content'])) {
+            // delete menu items
+            $sqlDeleteMenuItems = 'DELETE FROM `menu_items` WHERE `id_menu` = '.$post['id_content'];
+            @$modelMenu->execute($sqlDeleteMenuItems);
+            $out['status'] = 1;
+            $out['message'] = '<span style="color:green;">&nbsp;&nbsp;<i class="fa fa-check"></i> Content deleted succesfully.</span>';
+            exit(json_encode($out));
+          } else {
+            $out['status'] = 0;
+            $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not delete content. Please try again.</span>';
+            exit(json_encode($out));
+          }
+          break;
+       case 'slider':
+              $modelSliders = new Application_Model_DbTable_Composer();
+              $modelSliders->setTableName('sliders');
+              $modelSliders->setIdColumn('id_slider');
+              if($modelSliders->deleteData($post['id_content'])) {
+                // delete menu items
+                $sqlDeleteSliderItems = 'DELETE FROM `slider_items` WHERE `id_slider` = '.$post['id_content'];
+                @$modelSliders->execute($sqlDeleteSliderItems);
+                $out['status'] = 1;
+                $out['message'] = '<span style="color:green;">&nbsp;&nbsp;<i class="fa fa-check"></i> Content deleted succesfully.</span>';
+                exit(json_encode($out));
+              } else {
+                $out['status'] = 0;
+                $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not delete content. Please try again.</span>';
+                exit(json_encode($out));
+              }
+              break;
+      case 'form':
+              $modelForms = new Application_Model_DbTable_Composer();
+              $modelForms->setTableName('forms');
+              $modelForms->setIdColumn('id_form');
+              if($modelForms->deleteData($post['id_content'])) {
+                // delete menu items
+                $sqlDeleteFormElements = 'DELETE FROM `form_elements` WHERE `id_form` = '.$post['id_content'];
+                @$modelForms->execute($sqlDeleteFormElements);
+                $out['status'] = 1;
+                $out['message'] = '<span style="color:green;">&nbsp;&nbsp;<i class="fa fa-check"></i> Content deleted succesfully.</span>';
+                exit(json_encode($out));
+              } else {
+                $out['status'] = 0;
+                $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not delete content. Please try again.</span>';
+                exit(json_encode($out));
+              }
+              break;
+      case 'image':
+              $modelSiteMedia = new Application_Model_DbTable_Composer();
+              $modelSiteMedia->setTableName('site_media');
+              $modelSiteMedia->setIdColumn('id_site_media');
+              if($modelSiteMedia->deleteData($post['id_content'])) {
+                $out['status'] = 1;
+                $out['message'] = '<span style="color:green;">&nbsp;&nbsp;<i class="fa fa-check"></i> Content deleted succesfully.</span>';
+                exit(json_encode($out));
+              } else {
+                $out['status'] = 0;
+                $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not delete content. Please try again.</span>';
+                exit(json_encode($out));
+              }
+              break;
+      default:
+        $out['status'] = 0;
+        $out['message'] = '<span style="color:red;">&nbsp;&nbsp;<i class="fa fa-times"></i> Could not delete this content type. Please try again.</span>';
+        exit(json_encode($out));
+        break;
+    }
+  }
+
   ////////////////////////////////////////////////////////////////////
   //////////////   HELPER FUNCTIONS //////////////////////////////////
   ////////////////////////////////////////////////////////////////////
+
+  public function _updateMenuOrder($menuOrder,$idMenu,$sortOrder=1,$parentMenuItem=0) {
+    $modelMenuItems = new Application_Model_DbTable_Menuitems();
+    if($menuOrder) {
+      foreach($menuOrder as $menuItem) {
+        $updateMenuItem = array('sort_order' => $sortOrder++);
+        $updateMenuItem['id_parent_menu_item'] = $parentMenuItem;
+        $modelMenuItems->updateData($updateMenuItem,$menuItem->id);
+        if(isset($menuItem->children) && $menuItem->children) {
+          $this->_updateMenuOrder($menuItem->children,$idMenu,1,$menuItem->id);
+        }
+      }
+    }
+
+    return true;
+  }
 
   public function _getMainMenuItemsNestableRecursiveList($menUItems,$siteSlug,$isDropdownMenu=0) {
     $out = '';
@@ -1027,8 +1410,8 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
           $out .= '<div class="dd-handle dd3-handle"></div>';
           $out .= '<div class="dd3-content">'.$item['title'];
             $out .= '<div class="btn-group menu-item-edit-control">';
-  						$out .=	'<button id="btn_view_menu_item-'.$item['id_menu_item'].'" type="button" class="btn_view_menu_item btn bg-navy btn-xs"><i class="fa fa-eye"></i> view</button>';
-              $out .=	'<button id="btn_delete_menu_item-'.$item['id_menu_item'].'" type="button" class="btn_delete_menu_item btn bg-navy btn-xs"><i class="fa fa-trash"></i> delete</button>';
+  						$out .=	'<button id="btn_view_menu_item-'.$item['id_menu_item'].'" type="button" class="btn_view_menu_item btn bg-blue btn-xs"><i class="fa fa-edit"></i> edit</button>';
+              $out .=	'<button id="btn_delete_menu_item-'.$item['id_menu_item'].'" type="button" class="btn_delete_menu_item btn bg-red btn-xs"><i class="fa fa-trash"></i> delete</button>';
             $out .=	'</div>';
           $out .= '</div>';
           if(isset($item['sub_menu']) && $item['sub_menu']) $out .= $this->_getMainMenuItemsNestableRecursiveList($item['sub_menu'],$siteSlug,1);
@@ -1115,13 +1498,14 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
   }
 
   public function _getFooterMenuList($menUItems,$siteSlug) {
+    $modelMenuItems = new Application_Model_DbTable_Menuitems();
     $out = '';
     if($menUItems) {
       $out .= '<ul class="footer-menu">';
         foreach ($menUItems as $item) {
           $out .= '<li class="'.$defaultActiveClass.' '.$addOnClass.'">'; $defaultActiveClass = '';
-          if($item['link_type'] == "page_link" && $item['page_slug'] ) $out .= ' <a target="'.$item['target'].'" href="'.$this->view->baseUrl().'/sites?name='.$siteSlug.'&page='.$item['page_slug'].'">'.$item['title'].'</a>';
-          else $out .= ' <a target="'.$item['target'].'" href="'.$item['external_link'].'">'.$item['title'].'</a>';
+          $menuBaseUrl = $this->view->baseUrl().'/backoffice/themes/edit-theme-site';
+          $out .= $modelMenuItems->getMenuItemAnchor($item,$siteSlug,0,$menuBaseUrl);
           $out .= '</li>';
         }
       $out .= '</ul>';
@@ -1130,6 +1514,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
   }
 
   public function _getMainMenuItemsRecursiveList($menUItems,$siteSlug,$isDropdownMenu=0) {
+    $modelMenuItems = new Application_Model_DbTable_Menuitems();
     $out = '';
     $mainItemClass = 'nav navbar-nav';
     if($isDropdownMenu)  {
@@ -1149,8 +1534,8 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
 
         if($item['sub_menu']) $out .= '<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" href="'.$this->view->baseUrl().'/sites?name='.$siteSlug.'&page='.$item['page_slug'].'">'.$item['title'].' <span class="caret"></span></a>';
         else {
-          if($item['link_type'] == "page_link" && $item['page_slug'] ) $out .= ' <a target="'.$item['target'].'" href="'.$this->view->baseUrl().'/sites?name='.$siteSlug.'&page='.$item['page_slug'].'">'.$item['title'].'</a>';
-          else $out .= ' <a target="'.$item['target'].'" href="'.$item['external_link'].'">'.$item['title'].'</a>';
+          $menuBaseUrl = $this->view->baseUrl().'/backoffice/themes/edit-theme-site';
+          $out .= $modelMenuItems->getMenuItemAnchor($item,$siteSlug,0,$menuBaseUrl);
         }
 
         if(isset($item['sub_menu']) && $item['sub_menu']) $out .= $this->_getMainMenuItemsRecursiveList($item['sub_menu'],$siteSlug,1);
@@ -1229,30 +1614,30 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     } else return false;
   }
 
-public function _getCategoryRecursiveCheckList($categories,$selectedCatId='') {
-  $labelClasses = array(0 => '',1=>'badge badge-warning',2=>'badge badge-success',3=>'badge badge-danger',4=>'badge badge-info');
-  $out = '<ul class="category_rec_list">';
-  if($categories) {
-    foreach($categories as $cat) {
-      $labelClass = isset($labelClasses[$cat['category_level']])?$labelClasses[$cat['category_level']]:'';
-      $out .= '<li>';
-        $out .= '<input type="checkbox" name="category['.$cat['id_category'].']" id="category_'.$cat['id_category'].'" value="'.$cat['id_category'].'" class="crc_checkbox" ';
-          if(is_array($selectedCatId) && in_array($cat['id_category'],$selectedCatId)) $out .= 'checked="checked"';
-            else if($selectedCatId == $cat['id_category'] ) $out .= 'checked="checked"';
-        $out .='/> &nbsp;';
+  public function _getCategoryRecursiveCheckList($categories,$selectedCatId='') {
+    $labelClasses = array(0 => '',1=>'badge badge-warning',2=>'badge badge-success',3=>'badge badge-danger',4=>'badge badge-info');
+    $out = '<ul class="category_rec_list">';
+    if($categories) {
+      foreach($categories as $cat) {
+        $labelClass = isset($labelClasses[$cat['category_level']])?$labelClasses[$cat['category_level']]:'';
+        $out .= '<li>';
+          $out .= '<input type="checkbox" name="category['.$cat['id_category'].']" id="category_'.$cat['id_category'].'" value="'.$cat['id_category'].'" class="crc_checkbox" ';
+            if(is_array($selectedCatId) && in_array($cat['id_category'],$selectedCatId)) $out .= 'checked="checked"';
+              else if($selectedCatId == $cat['id_category'] ) $out .= 'checked="checked"';
+          $out .='/> &nbsp;';
 
-        //$out .= '<span class="'.$labelClass.'">';
-        $out .= $cat['category'];
-        //$out .= '</span>';
-        if(isset($cat['sub_categories']) && $cat['sub_categories']) $out .= $this->_getCategoryRecursiveCheckList($cat['sub_categories'],$selectedCatId);
-      $out .= '</li>';
-    }
+          //$out .= '<span class="'.$labelClass.'">';
+          $out .= $cat['category'];
+          //$out .= '</span>';
+          if(isset($cat['sub_categories']) && $cat['sub_categories']) $out .= $this->_getCategoryRecursiveCheckList($cat['sub_categories'],$selectedCatId);
+        $out .= '</li>';
+      }
 
-    $out .= '</ul>';
-    return $out;
+      $out .= '</ul>';
+      return $out;
 
-  } else return false;
-}
+    } else return false;
+  }
 
   public function _getCategorySelectEntries($categories,$selectedCatId='') {
     $out = '';
@@ -1296,6 +1681,5 @@ public function _getCategoryRecursiveCheckList($categories,$selectedCatId='') {
 
     return $errors;
   }
-
 
 }

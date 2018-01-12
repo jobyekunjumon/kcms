@@ -8,6 +8,30 @@ $(document).on('hidden.bs.modal', function () {
   }
 });
 
+
+$(document).on('click','.btn_delete_content',function(){
+  var elementId = $(this).attr('id');
+  var elementComponents = elementId.split('-');
+  $('#id_content_to_delete').val(elementComponents[2]);
+  $('#type_content_to_delete').val(elementComponents[1]);
+  $('#modal-delete-confirm').modal('show');
+});
+
+$(document).on('click','#btn_confirm_deletion',function() {
+  $('#btn_delete_content_status_cont').html('&nbsp;&nbsp;<i class="fa fa-spinner fa-spin fa-fw"></i> Updating changes');
+  var siteId = $('#id_site').val();
+  var contentId = $('#id_content_to_delete').val();
+  var contentType = $('#type_content_to_delete').val();
+  $.post('delete-content',{id_site:siteId,id_content:contentId,content_type:contentType},function(response){
+    var outData = $.parseJSON(response);
+    if(outData.status == 0 ) $('#btn_delete_content_status_cont').html(outData.message);
+    else if(outData.status == 1 ) {
+      $('#btn_delete_content_status_cont').html(outData.message);
+      timedRefresh(500);
+    }
+  });
+});
+
 $(document).on('click','.btn_add_content',function(){
   var elementId = $(this).attr('id');
   var elementComponents = elementId.split('-');
@@ -508,3 +532,7 @@ $(document).on('click','#btn_add_media',function(){
 $(document).on('click','.close_upload_frm_cont',function(){
 	$('#upload_frm_cont').toggle();
 });
+
+function timedRefresh(timeoutPeriod) {
+	setTimeout("location.reload(true);",timeoutPeriod);
+}

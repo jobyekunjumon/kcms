@@ -73,6 +73,18 @@ body {
     display: block;
     margin-top:-20px;
   }
+  .layout_image_wrapper img{
+    cursor: pointer;
+    border:1px solid transparent;
+    padding: 2px;
+  }
+  .layout_image_wrapper:hover img {
+    border:1px solid green;
+  }
+  .layout_image_wrapper.selected img {
+    border:1px solid green;
+  }
+
 .grid-zero div[class*="col-"] {
   padding: 0px; }
 

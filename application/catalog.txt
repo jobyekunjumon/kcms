@@ -1,0 +1,3 @@
+FOREIGN KEY (parent_id)
+    REFERENCES parent(id)
+    ON DELETE CASCADE
