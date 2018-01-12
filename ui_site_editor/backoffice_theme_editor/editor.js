@@ -8,7 +8,6 @@ $(document).on('hidden.bs.modal', function () {
   }
 });
 
-
 $(document).on('click','.btn_delete_content',function(){
   var elementId = $(this).attr('id');
   var elementComponents = elementId.split('-');
