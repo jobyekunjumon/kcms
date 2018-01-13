@@ -23,6 +23,7 @@ $(document).on('click','.layout_image_wrapper',function(){
   $('#'+layout).addClass('selected');
   $('#page_layout').val(layout);
 });
+
 $(document).on('click','#btn_add_page',function(){
   $("#modal_add_pages").modal('show');
 });

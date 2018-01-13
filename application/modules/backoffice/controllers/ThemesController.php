@@ -2,7 +2,6 @@
 class Backoffice_ThemesController extends Zend_Controller_Action {
 
   public function init() {
-
     $layout = $this->_helper->layout();
     $layout->setLayout('layout_alte');
 
@@ -21,10 +20,71 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
   }
 
   public function indexAction() {
-    $this->view->activeMenuItem = 'dashboard';
-    $this->view->pageHeading = 'Dashboard';
+    $this->view->activeMenuItem = 'themese';
+    $this->view->pageHeading = 'Themes';
     $breadcrumbs[] = array('link' => '', 'label' => 'Dashboard', 'icon' => 'fa fa-dashboard');
+    $breadcrumbs[] = array('link' => '', 'label' => 'Themes', 'icon' => '');
     $this->view->breadcrumbs = $breadcrumbs;
+
+    $modelThemes = new Application_Model_DbTable_Themes();
+    $request = $this->getRequest();
+    $get = $request->getQuery();
+
+		// prepare search condition
+    $conj = ' WHERE ';
+    if($this->user['utype'] != "super_admin" || $this->user['utype'] != "manager" ) {
+      $searchCondition = $conj.' `created_by` = '.$this->user['id_admin_user'];
+      $conj = '';
+    }
+		if(isset($get['theme_name']) && $get['theme_name']) {
+			$searchCondition .= ' AND `theme_name` LIKE "'.$get['theme_name'].'%"';
+      $conj = '';
+		}
+		if(isset($get['id_category']) && $get['id_category']) {
+			$searchCondition .= ' AND `id_category` = "'.$get['id_category'].'%"';
+      $conj = '';
+		}
+    if(isset($get['tags']) && $get['tags']) {
+			$searchCondition .= ' AND `tag` LIKE "'.$get['tags'].'%"';
+      $conj = '';
+		}
+
+		// pagination
+		$pageLimit = 10;
+		if(isset($get['limit']) && $get['limit'] && is_numeric($get['limit']) ) $pageLimit = $get['limit'];
+		$start = 0;
+		$noRecords = 0;
+		$resCountRecords = $modelThemes->getAll('','SELECT count(*) AS no_records FROM `themes` '.$searchCondition);
+		if(isset($resCountRecords[0]['no_records'])) $noRecords = $resCountRecords[0]['no_records'];
+		if (isset($get['page'])){
+			$page = intval($get['page']);
+			$slNo = ($page-1)*$pageLimit +1;
+		} else $slNo = 1;
+		$tpages = ceil($noRecords / $pageLimit);
+		if (!isset($page) || $page <= 0) $page = 1;
+		$reload = $this->view->baseUrl() . '/backoffice/themes/index?';
+		$reload .= $this->utilities->getUrlParams($get, array('page'));
+		$pagination = $this->utilities->paginate_two($reload, $page, $tpages, 2);
+		$start = ($page - 1) * $pageLimit;
+
+		//compose query
+		$sqlGetThemes = 'SELECT * FROM `themes` ';
+		$sqlGetThemes .= $searchCondition;
+		$sqlGetThemes .= ' LIMIT '.$start.', '.$pageLimit;
+
+    // get records
+    $themes = $modelThemes->getAll('', $sqlGetThemes, '');
+    $urlParamStr = $this->utilities->getUrlParams($get, array('del', 'page'));
+
+    if(isset($message) && $message) $this->view->message = $message;
+    if(isset($pagination) && $pagination) $this->view->pagination = $pagination;
+		if(isset($themes) && $themes) $this->view->themes = $themes;
+		if(isset($get) && $get) $this->view->frmData = $get;
+		if(isset($urlParamStr) && $urlParamStr) $this->view->urlParamStr = $urlParamStr;
+  }
+
+  public function themeAction() {
+
   }
 
   public function createcategoryAction() {

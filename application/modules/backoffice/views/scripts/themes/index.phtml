@@ -1,1 +1,90 @@
-Hello
+<div class="row">
+  <div class="col-lg-12">
+    <div class="box">
+      <div class="box-header" >
+         <h3 class="box-title">Search</h3>
+      </div>
+
+      <form name="frmFilter" action=""  class="form-vertivcal" >
+        <div class="box-body">
+          <div class="form-group col-sm-4">
+            <label class="control-label"  >Theme Name</label>
+            <input class="form-control" type="text" name="name" id="name" value="<?php if(isset($this->frmData['name']) && $this->frmData['name']) echo $this->frmData['name']; ?>" >
+          </div>
+
+          <div class="form-group col-sm-4">
+            <label class="control-label" >Category</label>
+            <select class="form-control" name="category" id="category">
+              <option value="">All</option>
+              <?php
+                if(isset($this->userTypesAllowedToCreate) && $this->userTypesAllowedToCreate) {
+                  foreach($this->userTypesAllowedToCreate as $key => $value) {
+                    echo '<option value="'.$key.'"';
+                      if(isset($this->frmData['utype']) && $this->frmData['utype'] == $key) echo 'selected="selected"';
+                    echo ' >'.$value.'</option>';
+                  }
+                }
+              ?>
+            </select>
+          </div>
+
+          <div class="form-group col-sm-4">
+            <label class="control-label"  >Tag</label>
+            <input class="form-control" type="text" name="tags" id="tags" value="<?php if(isset($this->frmData['tags']) && $this->frmData['tags']) echo $this->frmData['tags']; ?>" >
+          </div>
+        </div><!-- box-body -->
+        <div class="box-footer clearfix no-border">
+          <button type="submit" class="btn btn-success">Search</button>
+        </div><!-- box-footer -->
+      </form>
+    </div> <!-- box -->
+  </div> <!-- col-lg-12 -->
+</div> <!-- row -->
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="box">
+      <div class="box-body">
+          <table class="table table-bordered table-striped">
+            <thead>
+							<tr>
+								<th>Theme Name</th>
+								<th>Category</th>
+								<th>Created On</th>
+								<th>Price</th>
+								<th>Is Exclusive</th>
+								<th>Status</th>
+                <th>Actions</th>
+							</tr>
+						</thead>
+            <tbody>
+              <?php
+              if(isset($this->themes) && $this->themes) {
+                $isExclusiveLabels = array(0=>'No' , 1=>'Yes');
+								$isExclusiveLabelClass = array(0=>'label label-danger' , 1=>'label label-success');
+								$statusLabelClass = array('disabled'=>'label label-danger', 'available'=>'label label-success', 'draft' => 'label label-warning', 'sold_out' => 'label label-default');
+                foreach($this->themes as $entry) {
+                  echo '<tr>';
+                    echo '<td>'.$entry['theme_name'].'</td>';
+                    echo '<td>'.$entry['id_category'].'</td>';
+                    echo '<td>'.date('d M Y',strtotime($entry['created_on'])).'</td>';
+                    echo '<td>'.$entry['theme_price'].'</td>';
+                    echo '<td><span class="'.$isExclusiveLabelClass[$entry['is_exclusive']].'">'.$isExclusiveLabels[$entry['is_exclusive']].'</span></td>';
+                    echo '<td><span class="'.$statusLabelClass[$entry['theme_status']].'">'.ucwords($entry['theme_status']).'</span></td>';
+                    echo '<td class="center">
+                          <a title="View" class="btn-sm btn-primary" href="'.$this->baseUrl().'/backoffice/themes/theme?id_theme='.$entry['id_theme'].'"  ><i class="fa fa-search"></i></a>
+                          <a title="Edit" class="btn-sm btn-warning" href="'.$this->baseUrl().'/backoffice/themes/edit?id_theme='.$entry['id_theme'].'"  ><i class="fa fa-edit"></i></a>
+                          <a title="Delete" class="btn-sm btn-danger" href="'.$this->baseUrl().'/backoffice/themes/delete?id_theme='.$entry['id_theme'].'"  ><i class="fa fa-trash"></i></a>
+                        </td>';
+                  echo '</tr>';
+                }
+              } else {
+                echo '<tr><td colspan="7">No entries found</td></tr>';
+              }
+              ?>
+            </tbody>
+          </table>
+      </div>
+    </div> <!-- box -->
+  </div> <!-- col -->
+</div><!-- row -->
