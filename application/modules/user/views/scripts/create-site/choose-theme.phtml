@@ -1,0 +1,35 @@
+<div class="row">
+  <?php
+    if(isset($this->message) && $this->message) {
+      echo '<div class="col col-md-12">'.$this->message.'</div>';
+    }
+
+  ?>
+
+  <?php
+  if(isset($this->themes) && $this->themes) {
+    echo '<form name="frmChooseTheme" id="frmChooseTheme" action="" method="post" >';
+      echo '<input type="hidden" name="id_theme" id="id_theme" />';
+    echo '</form>';
+    foreach($this->themes as $theme) {
+      echo '<div class="col col-md-4">';
+        $themeLayoutImageUrl = $this->baseUrl().'/themes/'.$theme['theme_slug'].'/layout.png';
+        echo '<img src="'.$themeLayoutImageUrl.'" alt="'.$theme['theme_name'].'" style="width:200px;"/>';
+          echo '<a target="_blank" href="'.$this->baseUrl().'/sites?name='.$theme['theme_slug'].'-demo-site" type="button" class="btn btn-success btn_select_theme" id="btn_select_theme-'.$theme['id_theme'].'" name="btn_submit">Preview</a>';
+        echo '<button type="button" class="btn btn-success btn_select_theme" id="btn_select_theme-'.$theme['id_theme'].'" name="btn_submit">Select</button>';
+      echo '</div>';
+    }
+  } else {
+    echo '<div class="col col-md-12">No themes found</div>';
+  }
+  ?>
+</div><!-- row -->
+<?php
+$this->addOnJs .= "<script>
+  $(document).on('click','.btn_select_theme',function(){
+    var themeId = $(this).attr('id').split('-')[1];
+    $('#id_theme').val(themeId);
+    $('#frmChooseTheme').submit();
+  });
+</script>";
+?>

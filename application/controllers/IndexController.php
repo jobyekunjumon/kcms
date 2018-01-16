@@ -6,10 +6,8 @@ class IndexController extends Zend_Controller_Action {
     /* Initialize action controller here */
     $layout = $this->_helper->layout();
     $layout->setLayout('layout');
-    date_default_timezone_set("Asia/Kolkata");
-
   }
-  
+
   public function indexAction(){
 
   }

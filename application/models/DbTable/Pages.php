@@ -1,8 +1,8 @@
 <?php
-class Application_Model_DbTable_Sites extends Zend_Db_Table_Abstract
+class Application_Model_DbTable_Pages extends Zend_Db_Table_Abstract
 {
-    protected $_name = 'sites';
-    protected $identityColumn = 'id_site';
+    protected $_name = 'pages';
+    protected $identityColumn = 'id_page';
 
     function isUnique($field,$value , $extra='') {
 	    $where = ' `'.$field.'` = "'.$value.'"';
@@ -14,24 +14,8 @@ class Application_Model_DbTable_Sites extends Zend_Db_Table_Abstract
         return true;
     }
 
-  public function getSite($siteSlug) {
-    if(!$siteSlug) return false;
-    $site = $this->getRowByCondition(' `site_slug` = "'.addslashes(trim($siteSlug)).'" ');
-    return $site;
-  }
-  public function authenticateEditing($get,$user) {
-    if(!isset($get['site']) || !$get['site']) return false;
 
-    if(!isset($user['id_user']) || !$user['id_user']) return false;
-
-    $site = $this->getRowByCondition(' `site_slug` = "'.addslashes(trim($get['site'])).'" AND `id_user` = '.$user['id_user']);
-    if(!$site) return false;
-
-    return true;
-
-  }
-
-  public function getAll($cond='',$query = '',$fields="*") {
+    public function getAll($cond='',$query = '',$fields="*") {
 		if($query) $sql = $query;
 		else $sql = 'SELECT '.$fields.' FROM `'.$this->_name.'` '.$cond;
 

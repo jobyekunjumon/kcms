@@ -104,6 +104,7 @@ class Application_Model_DbTable_Menuitems extends Zend_Db_Table_Abstract
 
    public function getMenuItemsHierarchy($idParent=0,$condition='') {
 
+
     $sqlGetMenuItems = ' WHERE `id_parent_menu_item` = '.$idParent;
     if($condition) $sqlGetMenuItems .= ' AND '.$condition;
     $sqlGetMenuItems .= ' ORDER BY `sort_order` ASC, `id_menu_item` ASC' ;

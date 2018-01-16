@@ -1,0 +1,43 @@
+<div class="row">
+  <?php
+    if(isset($this->message) && $this->message) {
+      echo '<div class="col-md-12">'.$this->message.'</div>';
+    }
+  ?>
+
+  <div class="col-md-12">
+      <form role="form" method="post">
+        <div class="form-group " >
+            <label class="col-sm-3 control-label" >Name </label>
+            <div class="col-sm-9"  >
+                <input type="text" class="form-control" name="name" id="name" placeholder="Name" value="<?php if(isset($this->frmData['name'])) echo $this->frmData['name']; ?>" />
+                <?php if(isset($this->errors['name'])) echo '<p class="_red">'.$this->errors['name'].'</p>';  ?>
+            </div>
+        </div>
+
+        <div class="form-group " >
+            <label class="col-sm-3 control-label" >Email </label>
+            <div class="col-sm-9"  >
+                <input type="text" class="form-control" name="email" id="email" placeholder="Email" value="<?php if(isset($this->frmData['email'])) echo $this->frmData['email']; ?>" />
+                <?php if(isset($this->errors['email'])) echo '<p class="_red">'.$this->errors['email'].'</p>';  ?>
+            </div>
+        </div>
+
+        <div class="form-group " >
+            <label class="col-sm-3 control-label" >Password </label>
+            <div class="col-sm-9"  >
+                <input type="text" class="form-control" name="password" id="password" placeholder="Password" value="<?php if(isset($this->frmData['password'])) echo $this->frmData['password']; ?>" />
+                <?php if(isset($this->errors['password'])) echo '<p class="_red">'.$this->errors['password'].'</p>';  ?>
+            </div>
+        </div>
+
+        <div class="form-group " >
+            <label class="col-sm-3 control-label" ></label>
+            <div class="col-sm-9"  >
+                <button type="submit" class="btn btn-success">Signup</button>
+            </div>
+        </div>
+
+      </form>
+  </div>
+</div><!-- row -->

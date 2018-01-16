@@ -137,6 +137,7 @@ class SitesController extends Zend_Controller_Action {
       foreach($menu as $menuEntry) {
         $menuContent = '';
         $menuItemsHirarchy = $modelMenuItems->getMenuitemsHierarchy(0,' `id_menu` = '.$menuEntry['id_menu'].' AND `menu_item_status` = 1');
+
         if($menuEntry['menu_type'] == "main_menu") {
             $menuContent = $this->_getMainMenuItemsRecursiveList($menuItemsHirarchy,$site['site_slug'],0);
         } else if($menuEntry['menu_type'] == "footer_menu") {
@@ -147,6 +148,7 @@ class SitesController extends Zend_Controller_Action {
         $contents[$contentsCount]['component_id'] = $menuEntry['component_id'];
         $contents[$contentsCount]['component_type'] = 'menu';
         $contents[$contentsCount]['content'] = $menuContent;
+        
       }
 
     }
@@ -360,7 +362,8 @@ class SitesController extends Zend_Controller_Action {
 
   public function _authenticateSite($site) {
     if($site['site_status'] != "active") return false;
-    if($site['id_user'] == 0) return true;
+
+    return true;
   }
 
 }

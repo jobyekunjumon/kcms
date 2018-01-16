@@ -3,7 +3,7 @@
 require_once(APPLICATION_PATH . '/../library/swiftMailer/swift_required.php');
 
 class Application_Model_Mailerbasic {
-    
+
     public $view = "";
     /**
      * Constructor for the class, provide directory path where mail templates are saved
@@ -16,9 +16,9 @@ class Application_Model_Mailerbasic {
     }
 
     public function send($from, $to,  $subject, $message) {
-      		
+
         $body = $this->getMailTemplate($message);
-        
+
         $headers = "From: " . $from . "\r\n";
         $headers .= "Content-type: text/html\r\n";
         if ($this->sendSendGridMail($to, $subject, $body, $attachment))
@@ -35,9 +35,9 @@ class Application_Model_Mailerbasic {
 					</tr>
 					<tr>
 					   <td>' . $content . '</td>
-					</tr>                    
+					</tr>
 				</table>';
-        return $out;    
+        return $out;
     }
 
     function sendGmail($to, $subject, $body,$attachment= null) {
@@ -49,7 +49,7 @@ class Application_Model_Mailerbasic {
                 ->setUsername('thehubwebinfo@gmail.com')
                 ->setPassword('hubweb@888')
         ;
-        
+
         // Create the Mailer using your created Transport
         $mailer = Swift_Mailer::newInstance($transport);
 
@@ -66,12 +66,12 @@ class Application_Model_Mailerbasic {
         }catch(Exception $e){
             return false;
         }
-        
+
         return $result;
-    }	
-		
+    }
+
 	function sendSendGridMail($to, $subject, $body, $attachment = '') {
-		
+
 			// Create the Transport
 			$transport = Swift_SmtpTransport::newInstance('ssl://smtp.sendgrid.net:465', 465)
                 ->setUsername('ticketfun')
@@ -86,16 +86,16 @@ class Application_Model_Mailerbasic {
 					->setFrom(array('hello@ticketfun.me' => 'Ticketfun'))
 					->setTo(array($to))
 					->setBody($body, 'text/html')
-			; 
-		   
+			;
+
 			// Send the message
-		   
+
 		try{
 			$result = $mailer->send($message);
         }catch(Exception $e){
             return false;
         }
-        
-        return $result;  	
+
+        return $result;
 	}
 }
