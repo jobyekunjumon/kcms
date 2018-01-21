@@ -21,7 +21,7 @@ class User_AuthController extends Zend_Controller_Action
         }
         $message .= '</div>';
       } else {
-        $modelUsers = new Application_Model_DbTable_Users();
+        $modelUsers = new Application_Model_DbTable_Adminusers();
         $email = $post['username'];
         $passwordSalt = $modelUsers->getPasswordSalt($email);
         $passwordHash = $modelUsers->_computePasswordHash($post['password'], $passwordSalt);
@@ -30,7 +30,7 @@ class User_AuthController extends Zend_Controller_Action
           // update login date
           $dataUpdateUser = array('last_login'=> date('Y-m-d H:i:s'));
           $modelUsers->updateData($dataUpdateUser,$idUser);
-          $urlUserDash = array('module'=>'user','controller'=>'index', 'action'=>'index');
+          $urlUserDash = array('controller'=>'index', 'action'=>'index');
           $this->_helper->redirector->gotoRoute($urlUserDash);
         } else {
           $message = '<div class="alert alert-error">Login failed. Please ensure that the username and password you entered are correct.</div>';
@@ -48,11 +48,11 @@ class User_AuthController extends Zend_Controller_Action
     $adapter->setCredential($password);
 
     $auth = Zend_Auth::getInstance();
-    $result = $auth->authenticate($adapter); 
+    $result = $auth->authenticate($adapter);
     if ($result->isValid()) {
       $user = $adapter->getResultRowObject();
       $auth->getStorage()->write($user);
-      return $auth->getIdentity()->id_user;
+      return $auth->getIdentity()->id_admin_user;
     }
     return false;
   }
@@ -63,10 +63,10 @@ class User_AuthController extends Zend_Controller_Action
     $dbAdapter = Zend_Db_Table::getDefaultAdapter();
     $authAdapter = new Zend_Auth_Adapter_DbTable($dbAdapter);
 
-    $authAdapter->setTableName('users')
+    $authAdapter->setTableName('admin_users')
                 ->setIdentityColumn('email')
                 ->setCredentialColumn('password');
-    $authAdapter->getDbSelect()->where('user_status = "active"');
+    $authAdapter->getDbSelect()->where('admin_user_status = 1 AND `utype` = "super_admin"');
 
     return $authAdapter;
   }

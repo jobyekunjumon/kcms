@@ -96,7 +96,8 @@ class User_CreateSiteController extends Zend_Controller_Action {
         if($modelSites->updateData($updateSite,$site['id_site'])) {
           // fetch all pages from theme demo site and create demo pages and its contents
           $this->_iterateThemeSite($site['id_site'],$themeSite['id_site'],$theme['id_theme']);
-          $this->_redirect('/sites?name='.$site['site_slug']);
+          //$this->_redirect('http://'.$site['site_slug'].'.oosify.com');
+          $this->_redirect('/user/edit-site?name='.$site['site_slug']);
         } else {
           $message = $this->utilities->composeMessageHtml('Something went wrong while updating your site. Please go back to your dash board and try again later.','error');
         }

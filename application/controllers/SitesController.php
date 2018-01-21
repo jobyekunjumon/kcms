@@ -16,6 +16,13 @@ class SitesController extends Zend_Controller_Action {
     $request = $this->getRequest();
     $get = $request->getQuery();
 
+    $url = $_SERVER['HTTP_HOST'];
+    $url = str_replace('http://','',$url);
+    $url = str_replace('www','',$url);
+    $urlTokens = explode('.',$url);
+    $get['name'] = $urlTokens[0];
+    $get['page'] = $this->getRequest()->getParam('page');
+
     if(!isset($get['name']) || !isset($get['name'])) {
       $this->_redirect('/sites/error');
     }
@@ -148,7 +155,7 @@ class SitesController extends Zend_Controller_Action {
         $contents[$contentsCount]['component_id'] = $menuEntry['component_id'];
         $contents[$contentsCount]['component_type'] = 'menu';
         $contents[$contentsCount]['content'] = $menuContent;
-        
+
       }
 
     }

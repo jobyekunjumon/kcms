@@ -66,7 +66,7 @@ class Backoffice_AuthController extends Zend_Controller_Action
     $authAdapter->setTableName('admin_users')
                 ->setIdentityColumn('email')
                 ->setCredentialColumn('password');
-    $authAdapter->getDbSelect()->where('admin_user_status = 1 AND `utype` = "super_admin"');
+    $authAdapter->getDbSelect()->where('admin_user_status = 1');
 
     return $authAdapter;
   }

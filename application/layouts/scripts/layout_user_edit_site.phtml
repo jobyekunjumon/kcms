@@ -1,0 +1,91 @@
+<?php
+@$pageContent = file_get_contents($this->theme['layout_file']);
+if(!$pageContent) exit('Something went wrong while fetching site data. Please try again later.');
+
+// assign addon css , content and scripts
+$addOnCss = '<link rel="stylesheet" href="'.$this->baseUrl().'/themes/'.$this->theme['theme_slug'].'/css/style.css">';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_alte/bower_components/font-awesome/css/font-awesome.min.css">';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/sortable.css">';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_alte/dist/css/AdminLTE.min.css">';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_user_site_editor/content_editor_app.css">';
+
+$addOnJs = '<script>
+							var baseUrl = "'.$this->baseUrl().'"
+						</script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/content_editor_app.js"></script>';
+
+$pageContent = str_replace('<themeDir>',$this->baseUrl().'/themes/'.$this->theme['theme_slug'],$pageContent);
+$pageContent = str_replace('@addOnCss;',$addOnCss,$pageContent);
+$pageContent = str_replace('@addOnJs;',$addOnJs,$pageContent);
+$pageContent = str_replace('@addOnContent;',$addOnContent,$pageContent);
+
+if(isset($this->contents) && $this->contents) {
+	foreach($this->contents as $content ) {
+		$componentId = str_replace(';','',$content['component_id']);
+
+		switch ($content['content_type']) {
+			case '':
+			case ' ':
+			case 'NULL':
+			case 'text':
+			case 'html':
+					$contentType = 'text';
+					if($content['content_type']) $contentType = $content['content_type'];
+					$placeHolderContent = '<div  class="editable_text" id="rootcont_edit_'.$contentType.'-'.$content['id_content'].'">';
+						$placeHolderContent .= '<div contenteditable="false" id="contenteditable-'.$content['id_content'].'" >';
+							$placeHolderContent .= stripslashes($content['content']);
+						$placeHolderContent .= '</div>';
+						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
+																			<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$contentType.' btn bg-navy btn-xs btn_edit_text" ><i class="fa fa-edit"></i> Edit</button>
+																			<button id="btn_delete_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$contentType.' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
+																		</div>';
+						$placeHolderContent .= '<div class="btn-group save-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
+																			<button id="btn_save_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_save_content_'.$contentType.' btn bg-green btn-xs btn_save_text" ><i class="fa fa-save"></i> Save</button>
+																			<button id="btn_cancel_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_cancel_content_edit_'.$contentType.' btn_cancel_content_edit btn bg-yellow btn-xs" ><i class="fa fa-times"></i> Cancel</button>
+																		</div>';
+					$placeHolderContent .= '</div>';
+				break;
+			case 'image':
+						$contentType = 'image';
+						if($content['content_type']) $contentType = $content['content_type'];
+						$placeHolderContent = '<div  class="editable_image" id="rootcont_edit_'.$contentType.'-'.$content['id_content'].'">';
+							$placeHolderContent .= '<div contenteditable="true" id="contenteditable-'.$content['id_content'].'" >';
+								$placeHolderContent .= stripslashes($content['content']);
+							$placeHolderContent .= '</div>';
+							$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
+																				<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$contentType.' btn bg-navy btn-xs btn_edit_image" ><i class="fa fa-edit"></i> Edit</button>
+																				<button id="btn_delete_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$contentType.' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
+																			</div>';
+							$placeHolderContent .= '<div class="btn-group save-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
+																				<button id="btn_save_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_save_content_'.$contentType.' btn bg-green btn-xs btn_save_image" ><i class="fa fa-save"></i> Save</button>
+																				<button id="btn_cancel_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_cancel_content_edit_'.$contentType.' btn_cancel_content_edit btn bg-yellow btn-xs" ><i class="fa fa-times"></i> Cancel</button>
+																			</div>';
+						$placeHolderContent .= '</div>';
+					break;
+			default:
+					$placeHolderContent = '<div class="editable_update" >';
+						$placeHolderContent .= stripslashes($content['content']);
+						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$content['content_type'].'_'.$content['id_content'].'">
+																			<button id="btn_edit_'.$content['content_type'].'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$content['content_type'].' btn bg-navy btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> Edit</button>
+																			<button id="btn_delete-'.$content['content_type'].'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$content['content_type'].' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
+																		</div>';
+					$placeHolderContent .= '</div>';
+				break;
+		}
+		$pageContent = str_replace($content['component_id'],$placeHolderContent,$pageContent);
+	}
+}
+
+// remove all not rendered place holders
+if(!isset($_GET['debug'])) {
+	preg_match_all('/@(.*);/', $pageContent, $notRenderedPlaceHolders);
+	if (isset($notRenderedPlaceHolders[0]) && $notRenderedPlaceHolders[0]) {
+		foreach ($notRenderedPlaceHolders[0] as $placeHolder) {
+			$pageContent = str_replace($placeHolder,'',$pageContent);
+		}
+	}
+}
+
+
+echo $pageContent;
+?>

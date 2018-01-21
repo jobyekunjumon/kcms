@@ -10,6 +10,7 @@ class Backoffice_MediaController extends Zend_Controller_Action {
     $auth = Zend_Auth::getInstance();
     if ($auth->hasIdentity()) {
       $this->user = (array) $auth->getIdentity();
+      if(!isset($this->user['id_admin_user'])) $this->_helper->redirector('index', 'auth');
       unset($this->user['salt']);
       unset($this->user['password']);
       $this->view->user = $this->user;

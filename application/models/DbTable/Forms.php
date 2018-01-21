@@ -1,47 +1,41 @@
 <?php
-class Application_Model_DbTable_Sites extends Zend_Db_Table_Abstract
+class Application_Model_DbTable_Forms extends Zend_Db_Table_Abstract
 {
-  protected $_name = 'sites';
-  protected $identityColumn = 'id_site';
+    protected $_name = 'forms';
+    protected $identityColumn = 'id_form';
 
-  function fetchAndAuthenticateSiteForEditing($siteSlug,$user) {
-    if(!$siteSlug) return false;
-    if(!$user || !isset($user['id_user'])) return false;
 
-    $site = $this->getRowByCondition(' `site_slug` = "'.$siteSlug.'" AND `id_user` = '.$user['id_user']);
-    if(!$site) return false;
-
-    return $site;
-  }
-
-  function isUnique($field,$value , $extra='') {
-    $where = ' `'.$field.'` = "'.$value.'"';
-    $where .= $extra;
-    $row = $this->fetchRow($where);
-    if($row){
-      return false;
+function __construct() {
+  $this->utilities = new Application_Model_Utilities();
+  $this->view = new Zend_View();
+}
+public function getForms($idSite,$idPage,$contentsCount='') {
+  $out = array();
+  // get forms
+  $forms = $this->getAll(' WHERE `id_site` = '.$idSite.' AND `form_status` = 1 AND (`id_page` = '.$idPage.' OR `id_page` = 0 ) ');
+  if($forms) {
+    foreach($forms as $form) {
+      $contents[$contentsCount]['component_id'] = $form['component_id'];
+      $contents[$contentsCount]['content_type'] = 'form';
+      $contents[$contentsCount]['content'] = $this->utilities->getForm($form,'post','');
+      $contents[$contentsCount++]['id_content'] = $form['id_form'];
     }
-    return true;
   }
 
-  public function getSite($siteSlug) {
-    if(!$siteSlug) return false;
-    $site = $this->getRowByCondition(' `site_slug` = "'.addslashes(trim($siteSlug)).'" ');
-    return $site;
-  }
-  public function authenticateEditing($get,$user) {
-    if(!isset($get['site']) || !$get['site']) return false;
+  return $out;
+}
 
-    if(!isset($user['id_user']) || !$user['id_user']) return false;
+    function isUnique($field,$value , $extra='') {
+	    $where = ' `'.$field.'` = "'.$value.'"';
+		$where .= $extra;
+		$row = $this->fetchRow($where);
+        if($row){
+            return false;
+        }
+        return true;
+    }
 
-    $site = $this->getRowByCondition(' `site_slug` = "'.addslashes(trim($get['site'])).'" AND `id_user` = '.$user['id_user']);
-    if(!$site) return false;
-
-    return true;
-
-  }
-
-  public function getAll($cond='',$query = '',$fields="*") {
+    public function getAll($cond='',$query = '',$fields="*") {
 		if($query) $sql = $query;
 		else $sql = 'SELECT '.$fields.' FROM `'.$this->_name.'` '.$cond;
 

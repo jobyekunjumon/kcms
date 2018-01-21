@@ -20,14 +20,139 @@
   visibility: visible;
   opacity: 1;
 }
+
 .editable_text {
   position:relative;
   display:grid;
   border:1px solid transparent;
 }
+.editable_text_active {
+  position:relative;
+  display:grid;
+  border:1px dashed blue;
+}
 .editable_text:hover {
   border:1px dashed #2d2d2d;
 }
+.editable_text .edit-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_text_active .edit-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_text .save-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_text_active .save-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: visible;
+  opacity: 1;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_text:hover .edit-control{
+  visibility: visible;
+  opacity: 1;
+}
+
+.editable_image {
+  position:relative;
+  display:grid;
+  border:1px solid transparent;
+}
+.editable_image_active {
+  position:relative;
+  display:grid;
+  border:1px dashed blue;
+}
+.editable_image:hover {
+  border:1px dashed #2d2d2d;
+}
+.editable_image .edit-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_image_active .edit-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_image .save-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_image_active .save-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: visible;
+  opacity: 1;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_image:hover .edit-control{
+  visibility: visible;
+  opacity: 1;
+}
+
 .editable_update{
   position:relative;
   display:grid;

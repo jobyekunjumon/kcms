@@ -1,18 +1,9 @@
 <?php
-class Application_Model_DbTable_Sites extends Zend_Db_Table_Abstract
+class Application_Model_DbTable_Contents extends Zend_Db_Table_Abstract
 {
-  protected $_name = 'sites';
-  protected $identityColumn = 'id_site';
+  protected $_name = 'contents';
+  protected $identityColumn = 'id_content';
 
-  function fetchAndAuthenticateSiteForEditing($siteSlug,$user) {
-    if(!$siteSlug) return false;
-    if(!$user || !isset($user['id_user'])) return false;
-
-    $site = $this->getRowByCondition(' `site_slug` = "'.$siteSlug.'" AND `id_user` = '.$user['id_user']);
-    if(!$site) return false;
-
-    return $site;
-  }
 
   function isUnique($field,$value , $extra='') {
     $where = ' `'.$field.'` = "'.$value.'"';

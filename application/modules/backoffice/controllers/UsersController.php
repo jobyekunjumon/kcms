@@ -7,6 +7,7 @@ class  Backoffice_UsersController extends Zend_Controller_Action {
     $auth = Zend_Auth::getInstance();
     if ($auth->hasIdentity() && $auth->getIdentity()->utype == 'super_admin') {
       $this->user = (array) $auth->getIdentity();
+      if(!isset($this->user['id_admin_user'])) $this->_helper->redirector('index', 'auth');
       unset($this->user['salt']);
       unset($this->user['password']);
       $this->view->user = $this->user;

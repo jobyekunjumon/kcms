@@ -1,17 +1,37 @@
-<?php
+ <?php
 
 require_once(APPLICATION_PATH . '/../library/mpdf/mpdf.php');
 
 class Application_Model_Utilities {
 
-    public function debug($data) {
-        echo '<pre>';
-        if (is_array($data))
-            print_r($data);
-        else
-            echo $data;
-        echo '</pre>';
-    }
+public function debug($data) {
+  echo '<pre>';
+    if (is_array($data)) print_r($data);
+    else echo $data;
+  echo '</pre>';
+}
+
+public function getSiteSlug($get) {
+  $siteSlug = '';
+  if(isset($get['name']) && $get['name']) $siteSlug = $get['name'];
+  else {
+    $url = $_SERVER['HTTP_HOST'];
+    $url = str_replace('http://','',$url);
+    $url = str_replace('https://','',$url);
+    $url = str_replace('www','',$url);
+    $urlTokens = explode('.',$url);
+    $siteSlug = $urlTokens[0];
+  }
+
+  return $siteSlug;
+}
+
+public function getPageSlug($get) {
+  $pageSlug = 'home';
+  if(isset($get['page']) && $get['page']) $pageSlug = $get['page'];
+
+  return $pageSlug;
+}
 
 
 function getForm($form,$method,$action) {

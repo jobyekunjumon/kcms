@@ -1,0 +1,125 @@
+/*
+Author : Girish S
+email: giris@konnecty.com
+
+Starts at: 15-01-2018
+Last Commit:
+*/
+body {
+  font-family: 'Titillium Web', sans-serif; }
+
+.cms-header {
+  background-color: #0a0a0a;
+  margin: 0;
+  padding: 0;
+  height: 61px;
+  width: 100%;
+
+  z-index: 999999;
+  -webkit-box-shadow: 0px 11px 22px 6px rgba(0,0,0,0.35);
+-moz-box-shadow: 0px 11px 22px 6px rgba(0,0,0,0.35);
+box-shadow: 0px 11px 22px 6px rgba(0,0,0,0.35);
+  top: 0; }
+  .cms-header .brand-logo {
+    display: inline-block;
+    padding: 12px 10px 11px 10px; }
+  .cms-header .responsive-check ul {
+    list-style: none;
+    padding: 0;
+    margin: 0; }
+    .cms-header .responsive-check ul li {
+      display: inline-block;
+      background-color: #262626;
+      float: right; }
+      .cms-header .responsive-check ul li::before {
+        content: ' ';
+        position: absolute;
+        display: block;
+        height: 50px;
+        width: 2px;
+        background-color: #565656;
+        top: 0;
+        margin-top: 5px;
+        margin-left: 58px; }
+      .cms-header .responsive-check ul li:first-child::before {
+        background-color: transparent; }
+      .cms-header .responsive-check ul li a {
+        padding: 16px 16px;
+        display: block; }
+        .cms-header .responsive-check ul li a img {
+          width: 28px; }
+      .cms-header .responsive-check ul li.active {
+        background-color: #565656; }
+      .cms-header .responsive-check ul li.hidden-lg::before {
+        background-color: transparent; }
+  .cms-header .responsive-check .dropdown a {
+    color: white; }
+  .cms-header .responsive-check .dropdown-toggle {
+    padding: 16px 16px; }
+  .cms-header .responsive-check .dropdown-menu > .active > a, .cms-header .responsive-check .dropdown-menu > .active > a:focus, .cms-header .responsive-check .dropdown-menu > .active > a:hover {
+    background-color: #565656; }
+  .cms-header .responsive-check .dropdown-menu > li > a:focus, .cms-header .responsive-check .dropdown-menu > li > a:hover {
+    background-color: #565656; }
+  .cms-header .responsive-check .dropdown-menu {
+    min-width: 72px;
+    border: 0px;
+    border-radius: 0px;
+    background-color: #262626; }
+    .cms-header .responsive-check .dropdown-menu li {
+      float: left; }
+      .cms-header .responsive-check .dropdown-menu li a {
+        padding-left: 22px;
+        padding-right: 24px; }
+      .cms-header .responsive-check .dropdown-menu li::before {
+        display: none; }
+  .cms-header .page-actions button {
+    float: right;
+    height: 36px;
+    min-width: 120px;
+    margin: 12px 6px;
+    border-radius: 4px;
+    font-weight: 600; }
+    @media (max-width: 1200px) {
+      .cms-header .page-actions button {
+        min-width: 44px; }
+        .cms-header .page-actions button h5 {
+          display: none; }
+        .cms-header .page-actions button svg {
+          margin-left: 0; } }
+  .cms-header .page-actions .btn-publish {
+    background-color: #00c3b1;
+    color: white; }
+  .cms-header .page-actions .btn-preview {
+    background-color: #dfdfdf;
+    color: #1e1e1e; }
+  .cms-header .page-actions h5 {
+    display: block;
+    margin: 0;
+    float: left;
+    margin-top: 1px;
+    font-size: 16px;
+    margin-left: 10px; }
+  .cms-header .page-actions svg {
+    display: inline-block;
+    width: 20px;
+    float: left; }
+  .cms-header .user-actions .navbar-nav {
+    margin: 0; }
+  .cms-header .user-actions .navbar-nav > li > a {
+    padding-top: 16px;
+    padding-bottom: 16px;
+    color: white; }
+  @media (min-width: 768px) {
+    .cms-header .user-actions .navbar-nav > li > a {
+      padding-top: 16px;
+      padding-bottom: 16px; } }
+  .cms-header .user-actions .nav > li > a:focus, .cms-header .user-actions .nav > li > a:hover {
+    background-color: transparent; }
+  .cms-header .user-actions li img {
+    width: 28px; }
+  .cms-header .user-actions .nav > li {
+    float: left; }
+  .cms-header .user-actions .navbar-right {
+    float: right; }
+
+

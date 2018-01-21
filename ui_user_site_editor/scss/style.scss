@@ -1,0 +1,170 @@
+/*
+Author : Girish S
+email: giris@konnecty.com
+
+Starts at: 15-01-2018
+Last Commit:
+*/
+body{
+  font-family: 'Titillium Web', sans-serif;
+}
+.cms-header{
+  background-color: #0a0a0a;
+  margin: 0;
+  padding: 0;
+  height: 61px;
+  width: 100%;
+  border-bottom: 1px solid #ffffff61;
+  position: fixed;
+  z-index: 999999;
+  top: 0;
+
+  .brand-logo{
+    display: inline-block;
+    padding: 12px 10px 11px 10px;
+  }
+  .responsive-check{
+    ul{
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      li{
+        display: inline-block;
+        background-color: #262626;
+        float: right;
+        &::before{
+          content: ' ';
+          position: absolute;
+          display: block;
+          height: 50px;
+          width: 2px;
+          background-color: #565656;
+          top: 0;
+          margin-top: 5px;
+          margin-left: 58px;
+        }
+        &:first-child{
+          &::before{
+            background-color: transparent;
+          }
+        }
+        a{
+          padding: 16px 16px;
+          display: block;
+          img{
+            width: 28px;
+          }
+        }
+        &.active{
+          background-color: #565656;
+        }
+        &.hidden-lg{
+          &::before{
+            background-color: transparent;
+          }
+        }
+      }
+    }
+    .dropdown{
+      a{
+        color: white;
+      }
+    }
+    .dropdown-toggle{
+      padding: 16px 16px;
+    }
+    .dropdown-menu>.active>a, .dropdown-menu>.active>a:focus, .dropdown-menu>.active>a:hover{
+      background-color: #565656;
+    }
+    .dropdown-menu>li>a:focus, .dropdown-menu>li>a:hover{
+      background-color: #565656;
+
+    }
+    .dropdown-menu{
+      min-width: 72px;
+      border: 0px;
+      border-radius: 0px;
+      background-color: #262626;
+      li{
+        float: left;
+        a{
+          padding-left: 22px;
+          padding-right: 24px;
+        }
+        &::before{
+          display: none;
+        }
+      }
+    }
+  }
+  .page-actions{
+    button{
+      float: right;
+      height: 36px;
+      min-width: 120px;
+      margin: 12px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      @media (max-width: 1200px){
+        min-width: 44px;
+        h5{
+          display: none;
+        }
+        svg{
+          margin-left: 0;
+        }
+      }
+    }
+    .btn-publish{
+      background-color: #00c3b1;
+      color: white;
+    }
+    .btn-preview{
+      background-color: #dfdfdf;
+      color: #1e1e1e;
+    }
+    h5{
+      display: block;
+      margin: 0;
+      float: left;
+      margin-top: 1px;
+      font-size: 16px;
+      margin-left: 10px;
+    }
+    svg{
+      display: inline-block;
+      width: 20px;
+      float: left;
+    }
+  }
+  .user-actions{
+    .navbar-nav{
+      margin: 0;
+    }
+    .navbar-nav>li>a {
+      padding-top: 16px;
+      padding-bottom: 16px;
+      color: white;
+    }
+    @media (min-width: 768px){
+      .navbar-nav>li>a {
+        padding-top: 16px;
+        padding-bottom: 16px;
+      }
+    }
+    .nav>li>a:focus, .nav>li>a:hover {
+      background-color: transparent;
+    }
+    li{
+      img{
+        width: 28px;
+      }
+    }
+    .nav>li{
+      float: left;
+    }
+    .navbar-right{
+      float: right;
+    }
+  }
+}

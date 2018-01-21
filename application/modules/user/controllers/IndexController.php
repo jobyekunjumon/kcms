@@ -1,10 +1,10 @@
 <?php
-class Backoffice_IndexController extends Zend_Controller_Action {
+class User_IndexController extends Zend_Controller_Action {
 
   public function init() {
 
     $layout = $this->_helper->layout();
-    $layout->setLayout('layout_alte');
+    $layout->setLayout('layout_user_dash');
 
     $auth = Zend_Auth::getInstance();
     if ($auth->hasIdentity()) {
@@ -25,6 +25,12 @@ class Backoffice_IndexController extends Zend_Controller_Action {
     $this->view->pageHeading = 'Dashboard';
     $breadcrumbs[] = array('link' => '', 'label' => 'Dashboard', 'icon' => 'fa fa-dashboard');
     $this->view->breadcrumbs = $breadcrumbs;
+
+    // get user sites
+    $modelSites = new Application_Model_DbTable_Sites();
+    $userSites = $modelSites->getAll(' WHERE `id_user` = '.$this->user['id_user']);
+
+    if(isset($userSites) && $userSites) $this->view->userSites = $userSites;
   }
 
   ////////////////////////////////////////////////////////////////////

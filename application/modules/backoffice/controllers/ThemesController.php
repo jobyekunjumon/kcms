@@ -8,6 +8,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     $auth = Zend_Auth::getInstance();
     if ($auth->hasIdentity()) {
       $this->user = (array) $auth->getIdentity();
+      if(!isset($this->user['id_admin_user'])) $this->_helper->redirector('index', 'auth');
       unset($this->user['salt']);
       unset($this->user['password']);
       $this->view->user = $this->user;
@@ -20,7 +21,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
   }
 
   public function indexAction() {
-    $this->view->activeMenuItem = 'themese';
+    $this->view->activeMenuItem = 'themes';
     $this->view->pageHeading = 'Themes';
     $breadcrumbs[] = array('link' => '', 'label' => 'Dashboard', 'icon' => 'fa fa-dashboard');
     $breadcrumbs[] = array('link' => '', 'label' => 'Themes', 'icon' => '');
