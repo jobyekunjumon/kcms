@@ -1,13 +1,10 @@
 <?php
 class Application_Model_DbTable_Media extends Zend_Db_Table_Abstract
 {
-    protected $_name = 'media';
-    protected $identityColumn = 'id_media';
+  protected $_name = 'media';
+  protected $identityColumn = 'id_media';
 
-function __construct() {
-  $this->utilities = new Application_Model_Utilities();
-  $this->view = new Zend_View();
-}
+
 function getMedia($idSite,$idPage,$contentsCount='') {
   $out = array();
   $sqlGetSiteMedia = 'SELECT sm.`component_id`, sm.`alt_text` as altered_alt_text, m.`id_media`, m.`file_name`, m.`file_type`,
@@ -32,9 +29,10 @@ function getMedia($idSite,$idPage,$contentsCount='') {
 }
 
 function _getImage($media,$outputType='image',$maxHeight='',$maxWidth='') {
-
-  $serverUrl = $this->utilities->getServerUrl();
-  $defImageUrl = $serverUrl.'/'.$this->view->baseUrl().'/images/noimage.jpg';
+  $utilities = new Application_Model_Utilities();
+  $view = new Zend_View();
+  $serverUrl = $utilities->getServerUrl();
+  $defImageUrl = $serverUrl.'/'.$view->baseUrl().'/images/noimage.jpg';
 
   $modelMedia = new Application_Model_DbTable_Media();
 
@@ -43,16 +41,8 @@ function _getImage($media,$outputType='image',$maxHeight='',$maxWidth='') {
     else exit($defImageUrl);
   }
 
-  $mediaUrl = $this->utilities->getMediaUrl($media,1,$media['thumbnail']);
+  $mediaUrl = $utilities->getMediaUrl($media,1,$media['thumbnail']);
 
-  // if($media['media_size_width'] || $media['media_size_height'] ) {
-  //   $mediaUrl = $serverUrl.'/'.$this->view->baseUrl().'/mds/imageurl?file='.$mediaUrl.'&width='.$width.'&height='.$height;
-  //   if(isset($maxHeight) && $maxWidth) {
-  //     $mediaUrl = $serverUrl.'/news/backoffice/media/imageurl?file='.$mediaUrl.'&maxw='.$maxWidth.'&maxh='.$maxHeight;
-  //   }
-  // } else if(isset($maxHeight) && $maxWidth) {
-  //   $mediaUrl = $serverUrl.'/news/backoffice/media/imageurl?file='.$mediaUrl.'&maxw='.$maxWidth.'&maxh='.$maxHeight;
-  // }
   if($outputType == 'url') return $mediaUrl;
 
   if($media['media_size_width'] || $media['media_size_height'] ) {

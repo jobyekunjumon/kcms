@@ -48,7 +48,6 @@
 	}
 	.bodyScrollLock {
 		overflow: hidden;
-		padding-top: 20px;
 	}
 	.mobile_top_strip {
 		display: block;
@@ -141,7 +140,7 @@
 	<?php if(isset($this->showSite) && $this->showSite && isset($this->site) && $this->site) : ?>
 	<div id="frame_container" class="frame_container" >
 		<div class="mobile_top_strip" style="display:none;"><img width="75" src="<?php echo $this->baseUrl(); ?>/ui_user_site_editor/images/mobile_cam.png" alt=""></div>
-		<iframe frameborder="0"  id="siteFrame" name="siteFrame" src="<?php echo $this->baseUrl(); ?>/user/edit-site/show-site?name=<?php echo $this->site['site_slug']; ?>&page=<?php echo $this->page['page_slug'];  ?>" style="width:100%;" onload="setFrameHeight();" ></iframe>
+		<iframe frameborder="0"  id="siteFrame" name="siteFrame" src="<?php echo $this->baseUrl(); ?>/user/edit-site/show-site?name=<?php echo $this->site['site_slug']; ?>&page=<?php echo $this->page['page_slug'];  ?>" style="width:100%;" height="500" ></iframe>
 		<div class="rotate_button change_viewport" style="display:none;"><img width="30" src="<?php echo $this->baseUrl(); ?>/ui_user_site_editor/images/screen-rotation-button.png" alt="Rotate Screen"></div>
 	</div>
 	<?php endif; ?>
@@ -149,6 +148,14 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<script>
+	 $('#siteFrame').load(function(){
+		  setFrameHeight();
+			var iframe = $('#siteFrame').contents();
+			iframe.find(".btn_change_image").click(function(){
+						 $('body').removeClass('bodyScrollLock');
+			});
+
+		});
 		$(document).on('click','.change_viewport',function(){
 			var targetViewport = $(this).attr('id').split('-')[1];
 			if(targetViewport == 'phone_portrait') {
@@ -213,7 +220,7 @@
 		function setFrameHeight() {
 			var windowHeight = window.innerHeight;
 			var iFrame = document.getElementById('siteFrame');
-			iFrame.style.height = (windowHeight) + 'px';
+			iFrame.style.height = (windowHeight-100) + 'px';
 		}
 	</script>
 	<?php if(isset($this->addOnJs) && $this->addOnJs)  echo $this->addOnJs; ?>

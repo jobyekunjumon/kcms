@@ -1,4 +1,6 @@
-
+body {
+  padding-top:20px;
+}
 .editable{
   border:1px solid #ff0000;
   position:relative;

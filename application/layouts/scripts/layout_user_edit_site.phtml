@@ -3,16 +3,235 @@
 if(!$pageContent) exit('Something went wrong while fetching site data. Please try again later.');
 
 // assign addon css , content and scripts
-$addOnCss = '<link rel="stylesheet" href="'.$this->baseUrl().'/themes/'.$this->theme['theme_slug'].'/css/style.css">';
-$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_alte/bower_components/font-awesome/css/font-awesome.min.css">';
-$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/sortable.css">';
+$addOnCss = '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/sortable.css">';
 $addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_alte/dist/css/AdminLTE.min.css">';
 $addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_user_site_editor/content_editor_app.css">';
+$addOnCss .= '<link rel="stylesheet" href="'.$this->baseUrl().'/ui_user_site_editor/dropzone/dropzone.css">';
+$addOnCss .= '<style>
+								.edit_spacer {
+									padding-top:25px;
+								}
+								.margin-bottom-100 {
+									margin-bottom:150px;
+								}
+							</style>';
 
 $addOnJs = '<script>
 							var baseUrl = "'.$this->baseUrl().'"
 						</script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/general_app.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/jquery.nestable.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/dropzone/dropzone.js"></script>';
 $addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/content_editor_app.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/image_editor_app.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/slider_editor_app.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/menu_editor_app.js"></script>';
+
+$addOnContent .= '<div class="modal fade " id="sliderModal"  role="dialog"  aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content margin-bottom-100">
+			<div class="color-line"></div>
+			<div class="modal-header">
+				<h4 class="modal-title">Slider Images</h4>
+			</div>
+			<form method="post" action="" id="frmSlider" >
+				<input type="hidden" name="id_slider" id="id_slider" />
+				<input type="hidden" name="site" id="site" value="'.$this->site['site_slug'].'" />
+				<input type="hidden" name="page" id="page" value="'.$this->page['page_slug'].'" />
+				<div class="modal-body" >
+					<div class="row" >
+						<div class="col-sm-12" >
+							<div class="form-group">
+								<label >Slider Properties</label><br>
+								<label >Show pagination <input type="checkbox" name="show_pagination" id="show_pagination" checked="checked" /></label>&nbsp;&nbsp;
+								<label >Show navigation <input type="checkbox" name="show_navigation" id="show_navigation" checked="checked" /></label>&nbsp;&nbsp;
+								<label >Show text in slider <input type="checkbox" name="show_item_description" id="show_item_description" checked="checked" /></label>&nbsp;&nbsp;
+							</div>
+						</div>
+					</div>
+
+					<div class="row" style="overflow:auto;">
+						<div class="col-sm-12" >
+							<div id="featured_image_cont" >
+							</div>
+						</div>
+					</div>
+				</div><!-- modal-body -->
+
+				<div class="modal-footer" id="slider_modal_footer">
+					<button type="button" class="btn btn-info btn-sm pull-left" data-target="#galleryModal"  data-toggle="modal" id="btn_show_media_gallery"><i class="fa fa-image"></i> Add Image</button>
+					<button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+					<button type="button" class="btn btn-primary btn-sm" id="btn_save_slider"><i class="fa fa-check"></i> Save Changes</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>';
+
+$addOnContent .= '<div class="modal fade " id="galleryModal"  role="dialog"  aria-hidden="true">
+	<div class="modal-dialog modal-lg" style="width:90%;">
+		<div class="modal-content margin-bottom-100">
+			<div class="color-line"></div>
+			<div class="modal-header">
+				<h4 class="modal-title">Media Library</h4>
+			</div>
+
+			<div class="modal-body" >
+				<div class="col-sm-9" style="border-right:2px solid #ccc;">
+					'.@$this->mediaModalMessage.'
+
+					<div class="nav-tabs-custom" style="box-shadow:0 1px 1px rgba(255, 255, 255, 0.1) !important; margin-bottom:0 !important;">
+						<ul class="nav nav-tabs">
+							<li class="active" ><a href="#tab_1" id="my_images_tab_selector" data-toggle="tab" aria-expanded="true">My Images</a></li>
+							<li class=""><a href="#tab_2" data-toggle="tab" aria-expanded="false">Stock Images</a></li>
+							<li class=""><a href="#tab_3" data-toggle="tab" aria-expanded="false">Upload image</a></li>
+						</ul>
+						<div class="tab-content">
+							<div class="tab-pane active" id="tab_1">
+								<input type="hidden" name="id_user" value="'.$this->user['id_user'].'" id="id_user" />
+								<div id="user_media_library_cont" style="height:305px; overflow:auto; "></div>
+							</div> <!-- tab 1-->
+							<div class="tab-pane" id="tab_2">
+
+								<div id="stock_media_library_cont" style="height:305px; overflow:auto; "></div>
+							</div> <!-- tab 2 -->
+							<div class="tab-pane" id="tab_3">
+								<div class="dropzone" id="dropzoneContainer" >
+									<div class="dz-message" style="color:#4aaba4; font-weight:bold;">Drop your files here or click to select from your computer.</div>
+								</div>
+								<span style="margin-top:5px; font-size:12px;  color:#a27c5c; font-weight:bold; ">After completed your uploading, please go to my images tab to select uploaded image.</span>
+							</div> <!-- tab 3 -->
+						</div><!-- tab content -->
+					</div> <!-- nav-tabs -->
+				</div> <!-- col-sm-9 -->
+
+				<div class="col-sm-3" id="media_cont" style="height:370px; overflow:auto; " >
+				</div>
+
+				<div style="clear:both;"></div>
+
+			</div><!-- modal-body -->
+
+			<div class="modal-footer" id="gallery_modal_footer">
+				<button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+				<button type="button" class="btn btn-primary btn-sm" id="btn_set_fetured_image" data-dismiss="modal" ><i class="fa fa-check"></i> Select Image</button>
+			</div>
+		</div>
+	</div>
+</div>';
+
+$addOnContent .=  '<div class="modal fade" id="modal_edit_menu">
+	<div id="" class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="modal_title_edit_menu" >Edit Menu</h4>
+			</div>
+			<div class="modal-body" id="modal_add_body">
+				<form role="form" id="frmEditMenu" action="" method="post">
+					<input type="hidden" name="component_id" id="component_id" value="" />
+					<input type="hidden" name="id_site" id="id_site" value="'.$this->site['id_site'].'" />
+					<input type="hidden" name="id_page" id="id_page" value="'.$this->page['id_page'].'" />
+					<input type="hidden" name="id_menu" id="id_menu" value="" />
+					<input type="hidden" name="action" id="action" value="edit_menu" />
+					<div class="row" >
+						<div class="col col-md-12 col-sm-12">
+							<div class="callout callout-warning">
+								<p>Drag the menu items to arrange the ordering. Click on edit button to edit menu item properties. Click on delete butto to delete ana item. Please
+									 be aware that, if you delete a menu item with sub menu items, the sub menu items will be also deleted.</p>
+							</div>
+						</div>
+					</div>
+          <div class="row content_form" id="content_form_edit_menu" >
+					</div>
+
+        </form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" id="btn_update_menu_order" class="btn btn-success btn-sm pull-left"><i class="fa fa-save"></i> Update menu order</button>
+				<div class="pull-left" id="btn_update_menu_order_status_cont"></div>
+				<button type="button" class="btn btn-sm  btn-info " id="btn_add_page"><i class="fa fa-plus"></i> Add new page or Menu Item</button>
+				<button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+			</div>
+		</div>
+	</div>
+</div>';
+
+$addOnContent .=  '<div class="modal fade" id="modal_add_pages">
+				<div id="" class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span></button>
+							<h4 class="modal-title" id="modal_title_add_page" >Add new menu item</h4>
+						</div>
+						<div class="modal-body" id="modal_add_body">
+							<div class="nav-tabs-custom" style="box-shadow:0 1px 1px rgba(255, 255, 255, 0.1) !important; margin-bottom:0 !important;">
+								<ul class="nav nav-tabs">
+									<li class="active" ><a href="#tab_new_page_link" id="new_page_tab_selector" data-toggle="tab" aria-expanded="true">New Page</a></li>
+									<li class=""><a href="#tab_external_link" id="tabselector_external_link" data-toggle="tab" aria-expanded="false">External or Duplicate page Link</a></li>
+								</ul>
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_new_page_link">
+										<form role="form" id="frmEditMenu" action="" method="post">
+											<input type="hidden" name="action" id="action" value="add_page" />
+
+											<div class="row content_form" id="content_form_add_page" >
+												<div class="col col-sm-12 col-md-12">
+													<div class="form-group">
+														<label>Page Name</label>
+														<input type="text" name="page_title" id="page_title" class="form-control" />
+													</div>
+													<div class="form-group">
+														<label>Add some keywords to recognise your page in search engine.</label>
+														<textarea name="keywords" id="keywords" class="form-control" placeholder="Keyword 1, keyword 2"></textarea>
+													</div>
+													<div class="form-group">
+														<input type="hidden" name="page_layout" id="page_layout" value="" />
+														<label>Select a layout</label>
+														<div class="row layout_selector_container" id="layout_selector_container">';
+															if(isset($this->layoutFiles) && $this->layoutFiles) {
+																foreach($this->layoutFiles as $layoutFile) {
+																	$fileNameComponents = explode('/',$layoutFile);
+																	$layoutFile = end($fileNameComponents);
+																	$layoutFileName = str_replace('.phtml','',$layoutFile);
+																	$layoutImage = $this->baseUrl().'/themes/'.$this->theme['theme_slug'].'/'.$layoutFileName.'.png';
+																	$addOnContent .= '<div class="clo col-sm-2 col-md-3 layout_image_wrapper" id="'.$layoutFileName.'" >';
+																		$addOnContent .= '<img src="'.$layoutImage.'" alt="'.$layoutFileName.'" />';
+																		$addOnContent .= '<label>'.$layoutFileName.'</label>';
+																	$addOnContent .= '</div>';
+																}
+															}
+															$addOnContent .='</div>
+													</div>
+													<div class="form-group">
+
+													</div>
+												</div>
+											</div>
+
+										</form>
+									</div> <!-- tab 1-->
+
+									<div class="tab-pane" id="tab_external_link">
+										External Link
+									</div> <!-- tab 2 -->
+
+									<div class="tab-pane" id="tab_same_page_link">
+										Same page link
+									</div> <!-- tab 3 -->
+								</div><!-- tab content -->
+							</div> <!-- nav-tabs -->
+						</div>
+						<div class="modal-footer" id="menu_editor_footer">
+							<button type="button" id="btn_submit_add_page" class="btn btn-success btn-sm pull-left"><i class="fa fa-save"></i> Save Page</button>
+							<div class="pull-left" id="add_page_status_cont"></div>
+							<button type="button"  class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+						</div>
+					</div>
+				</div>
+			</div>';
 
 $pageContent = str_replace('<themeDir>',$this->baseUrl().'/themes/'.$this->theme['theme_slug'],$pageContent);
 $pageContent = str_replace('@addOnCss;',$addOnCss,$pageContent);
@@ -49,7 +268,7 @@ if(isset($this->contents) && $this->contents) {
 						$contentType = 'image';
 						if($content['content_type']) $contentType = $content['content_type'];
 						$placeHolderContent = '<div  class="editable_image" id="rootcont_edit_'.$contentType.'-'.$content['id_content'].'">';
-							$placeHolderContent .= '<div contenteditable="true" id="contenteditable-'.$content['id_content'].'" >';
+							$placeHolderContent .= '<div id="imageeditable-'.$content['id_content'].'" >';
 								$placeHolderContent .= stripslashes($content['content']);
 							$placeHolderContent .= '</div>';
 							$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
@@ -57,11 +276,39 @@ if(isset($this->contents) && $this->contents) {
 																				<button id="btn_delete_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$contentType.' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
 																			</div>';
 							$placeHolderContent .= '<div class="btn-group save-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
-																				<button id="btn_save_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_save_content_'.$contentType.' btn bg-green btn-xs btn_save_image" ><i class="fa fa-save"></i> Save</button>
-																				<button id="btn_cancel_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_cancel_content_edit_'.$contentType.' btn_cancel_content_edit btn bg-yellow btn-xs" ><i class="fa fa-times"></i> Cancel</button>
+																				<button id="btn_changeimage_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn bg-aqua btn-xs btn_change_image" data-target="#galleryModal" data-toggle="modal" ><i class="fa fa-image"></i> New image</button>
+																				<button id="btn_cancel_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_cancel_image_edit btn bg-yellow btn-xs" ><i class="fa fa-times"></i> Cancel</button>
 																			</div>';
 						$placeHolderContent .= '</div>';
 					break;
+		case 'slider':
+					$contentType = 'slider';
+					if($content['content_type']) $contentType = $content['content_type'];
+					$placeHolderContent = '<div  class="editable_slider" id="rootcont_edit_'.$contentType.'-'.$content['id_content'].'">';
+						$placeHolderContent .= '<div id="slidereditable-'.$content['id_content'].'" >';
+							$placeHolderContent .= stripslashes($content['content']);
+						$placeHolderContent .= '</div>';
+						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
+																			<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$contentType.' btn bg-navy btn-xs btn_edit_slider" ><i class="fa fa-edit"></i> Edit</button>
+																			<button id="btn_delete_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$contentType.' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
+																		</div>';
+						$placeHolderContent .= '<div class="btn-group save-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
+																			<button id="btn_changeimage_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn bg-aqua btn-xs btn_change_slider_images" data-target="#sliderModal" data-toggle="modal" ><i class="fa fa-image"></i> Change Images</button>
+																			<button id="btn_cancel_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_cancel_slider_edit btn bg-yellow btn-xs" ><i class="fa fa-times"></i> Cancel</button>
+																		</div>';
+					$placeHolderContent .= '</div>';
+				break;
+		case 'menu ':
+					$contentType = 'menu';
+					if($content['content_type']) $contentType = $content['content_type'];
+					$placeHolderContent = '<div class="editable_update" >';
+						$placeHolderContent .= stripslashes($content['content']);
+						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
+																			<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_menu btn bg-navy btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> Edit</button>
+																			<button id="btn_delete-'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$content['content_type'].' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
+																		</div>';
+					$placeHolderContent .= '</div>';
+				break;
 			default:
 					$placeHolderContent = '<div class="editable_update" >';
 						$placeHolderContent .= stripslashes($content['content']);

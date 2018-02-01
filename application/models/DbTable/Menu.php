@@ -3,12 +3,10 @@ class Application_Model_DbTable_Menu extends Zend_Db_Table_Abstract
 {
   protected $_name = 'menu';
   protected $identityColumn = 'id_menu';
-
-  public function __construct() {
-    $this->view = new Zend_View();
-  }
+  protected $view;
 
   public function getMenu($site,$idPage,$contentsCount='',$menuBaseUrl) {
+    $this->view  = new Zend_View();
     $out = array();
     $menu = $this->getAll(' WHERE `id_site` = '.$site['id_site'].' AND `menu_status` = 1 AND (`id_page` = '.$idPage.' OR `id_page` = 0)');
     if($menu) {

@@ -27,13 +27,8 @@ $(document).on('click','.btn_cancel_content_edit',function(){
   var contentType = elementId.split('-')[0].split('_')[2];
   $('#contenteditable-'+contentId).html(originalContent[contentId]);
   $('#contenteditable-'+contentId).attr('contenteditable','false');
-  if(contentType == 'text' || contentType == 'html' ) {
-    $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_text_active');
-    $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_text');
-  } else {
-    $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_'+contentType+'_active');
-    $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_'+contentType);
-  }
+  $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_text_active');
+  $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_text');
 });
 $(document).on('click','.btn_save_text',function(){
   var elementId = $(this).attr('id');
@@ -48,57 +43,20 @@ $(document).on('click','.btn_save_text',function(){
         $('#contenteditable-'+contentId).html(editedContent);
         $('#contenteditable-'+contentId).attr('contenteditable','false');
 
-        if(contentType == 'text' || contentType == 'html' ) {
-          $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_text_active');
-          $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_text');
-        } else {
-          $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_'+contentType+'_active');
-          $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_'+contentType);
-        }
+        $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_text_active');
+        $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_text');
       } else {
         alert(responseData.message);
         $('#contenteditable-'+contentId).html(originalContent);
         $('#contenteditable-'+contentId).attr('contenteditable','false');
-        if(contentType == 'text' || contentType == 'html' ) {
-          $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_text_active');
-          $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_text');
-        } else {
-          $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_'+contentType+'_active');
-          $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_'+contentType);
-        }
+        $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_text_active');
+        $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_text');
       }
     });
   } else {
     $('#contenteditable-'+contentId).html(originalContent);
     $('#contenteditable-'+contentId).attr('contenteditable','false');
-    if(contentType == 'text' || contentType == 'html' ) {
-      $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_text_active');
-      $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_text');
-    } else {
-      $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_'+contentType+'_active');
-      $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_'+contentType);
-    }
-  }
-});
-
-$(document).on('click','.btn_edit_image',function(){
-  var elementId = $(this).attr('id');
-  var contentId = elementId.split('-')[1];
-  var contentType = elementId.split('-')[0].split('_')[2];
-  originalContent = $('#contenteditable-'+contentId).html();
-  $('#contenteditable-'+contentId).attr('contenteditable','true');
-  $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_image');
-  $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_image_active');
-  var containerWidth = $('#rootcont_edit_'+contentType+'-'+contentId).width();
-  if(containerWidth < 150) {
-    $('#btn_save_'+contentType+'-'+contentId).html('<i class="fa fa-save"></i>');
-    $('#btn_cancel_'+contentType+'-'+contentId).html('<i class="fa fa-times"></i>');
-    $('#btn_edit_'+contentType+'-'+contentId).html('<i class="fa fa-edit"></i>');
-    $('#btn_delete_'+contentType+'-'+contentId).html('<i class="fa fa-trash"></i>');
-  } else {
-    $('#btn_save_'+contentType+'-'+contentId).html('<i class="fa fa-save"></i> Save');
-    $('#btn_cancel_'+contentType+'-'+contentId).html('<i class="fa fa-times"></i> Cancel');
-    $('#btn_edit_'+contentType+'-'+contentId).html('<i class="fa fa-edit"></i> Edit');
-    $('#btn_delete_'+contentType+'-'+contentId).html('<i class="fa fa-trash"></i> Delete');
+    $('#rootcont_edit_'+contentType+'-'+contentId).removeClass('editable_text_active');
+    $('#rootcont_edit_'+contentType+'-'+contentId).addClass('editable_text');
   }
 });

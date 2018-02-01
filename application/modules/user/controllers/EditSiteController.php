@@ -111,12 +111,15 @@ class User_EditSiteController extends Zend_Controller_Action {
     $forms = $modelForms->getForms($site['id_site'],$page['id_page'],count($contents));
     if($forms) $contents = array_merge($contents,$forms);
 
+    // get all layouts of this theme
+    $layoutFiles = glob($theme['directory'].$themeSlug."/*.phtml");
 
     // view assignments
     if(isset($site) && $site) $this->view->site = $site;
     if(isset($page) && $page) $this->view->page = $page;
     if(isset($theme) && $theme) $this->view->theme = $theme;
     if(isset($contents) && $contents) $this->view->contents = $contents;
+    if(isset($layoutFiles) && $layoutFiles) $this->view->layoutFiles = $layoutFiles;
   }
   ////////////////////////////////////////////////////////////////////
   //////////////   HELPER FUNCTIONS //////////////////////////////////

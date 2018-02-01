@@ -264,6 +264,7 @@ class User_CreateSiteController extends Zend_Controller_Action {
           if($themeSliderItems) {
             foreach ($themeSliderItems as $themeSliderItem) {
               $newSliderItem = array('id_slider' => $newSliderId,
+                                'id_media' => $themeSliderItem['id_media'],
                                 'image_url' => $themeSliderItem['image_url'],
                                 'alt_text' => $themeSliderItem['alt_text'],
                                 'item_data' => $themeSliderItem['item_data']

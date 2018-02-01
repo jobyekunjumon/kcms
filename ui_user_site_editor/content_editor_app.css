@@ -153,6 +153,72 @@
   opacity: 1;
 }
 
+.editable_slider {
+  position:relative;
+  display:grid;
+  border:1px solid transparent;
+}
+.editable_slider_active {
+  position:relative;
+  display:grid;
+  border:1px dashed blue;
+}
+.editable_slider:hover {
+  border:1px dashed #2d2d2d;
+}
+.editable_slider .edit-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_slider_active .edit-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_slider .save-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_slider_active .save-control{
+  position: absolute;
+  margin-top: -23px;
+  float: right;
+  top:0;
+  right:0;
+  visibility: visible;
+  opacity: 1;
+  transition: all;
+  transition-duration: .3s;
+  transition-timing-function: ease-in-out;
+}
+.editable_slider:hover .edit-control{
+  visibility: visible;
+  opacity: 1;
+}
+
 .editable_update{
   position:relative;
   display:grid;

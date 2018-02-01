@@ -548,7 +548,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
           $modelSliderItems->setIdColumn('id_slider_item');
           $modelMedia = new Application_Model_DbTable_Media();
 
-          $this->utilities->debug($post);
+
           if(isset($post['featured_images']) && $post['featured_images']) {
             $showPagination = 0; $showNavigation = 0; $showItemDescription = 0; $prefferedImageSize = ''; $idPage = 0;
             if(isset($post['page_specific']) && $post['page_specific']) $idPage = $page['id_page'];
@@ -568,14 +568,16 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
                                );
 
             if($sliderId = $modelSlider->insertData($newSlider)) {
+              $i = 0;
               foreach($post['featured_images'] as $key=>$mediaId) {
                 // get media
                 $media = $modelMedia->getRowById($mediaId);
                 $imageUrl = $this->_getImage($media,'url');
-                $altText = (isset($post['alt_text'][0]) && $post['alt_text'][0])?addslashes($post['alt_text'][0]):'';
-                $caption = (isset($post['item_data'][0]) && $post['item_data'][0])?addslashes($post['item_data'][0]):'';
+                $altText = (isset($post['alt_text'][$i]) && $post['alt_text'][$i])?addslashes($post['alt_text'][$i]):'';
+                $caption = (isset($post['item_data'][$i]) && $post['item_data'][$i])?addslashes($post['item_data'][$i++]):'';
 
                 $newSliderItem = array('id_slider' => $sliderId,
+                                    'id_media' => $mediaId,
                                     'image_url' => $imageUrl,
                                     'alt_text' => $altText,
                                     'item_data' => $caption
