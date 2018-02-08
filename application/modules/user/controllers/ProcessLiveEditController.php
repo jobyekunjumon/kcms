@@ -698,6 +698,55 @@ class User_ProcessLiveEditController extends Zend_Controller_Action {
     }
   }
 
+  public function updateMapAction() {
+    $request = $this->getRequest();
+    $post = $request->getPost();
+
+    $out = array();
+    // validate input
+    if(!isset($post['id_map']) || !$post['id_map']) {
+      $out['status'] = 0;
+      $out['message'] = 'Something went wrong while saving your data. Please try again after refreshing the page.';
+      exit(json_encode($out));
+    }
+
+    if(!isset($post['lat']) || !$post['lat'] || !isset($post['lng']) || !$post['lng']) {
+      $out['status'] = 0;
+      $out['message'] = 'Something went wrong while saving your data. Please try again after refreshing the page.';
+      exit(json_encode($out));
+    }
+
+    $modelMaps = new Application_Model_DbTable_Maps();
+    // fetch content
+    $map = $modelMaps->getRowById($post['id_map']);
+    if(!$map) {
+      $out['status'] = 0;
+      $out['message'] = 'Something went wrong while saving your data. Please try again after refreshing the page.';
+      exit(json_encode($out));
+    }
+
+    // fetch site entry and verify content owner
+    $modelSites = new Application_Model_DbTable_Sites();
+    $site = $modelSites->getRowByCondition(' `id_site` = '.$map['id_site'].' AND `id_user` = '.$this->user['id_user']);
+    if(!$site) {
+      $out['status'] = 0;
+      $out['message'] = 'You are not allowed to change this content. Please login to edit the content.';
+      exit(json_encode($out));
+    }
+
+    // update content
+    $updateMap = array('latitude' => $post['lat'],'longitude' => $post['lng']  );
+    if($modelMaps->updateData($updateMap,$post['id_map'])) {
+      $out['status'] = 1;
+      $out['message'] = 'Success';
+      $out['updated_content'] = $image;
+      exit(json_encode($out));
+    }
+
+    $out['status'] = 0;
+    $out['message'] = 'Something went wrong while saving your data. Please try again after refreshing the page.';
+    exit(json_encode($out));
+  }
   ////////////////////////////////////////////////////////////////////
   //////////////   HELPER FUNCTIONS //////////////////////////////////
   ////////////////////////////////////////////////////////////////////

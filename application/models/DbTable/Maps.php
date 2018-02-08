@@ -1,85 +1,25 @@
 <?php
-class Application_Model_DbTable_Menu extends Zend_Db_Table_Abstract
+class Application_Model_DbTable_Maps extends Zend_Db_Table_Abstract
 {
-  protected $_name = 'menu';
-  protected $identityColumn = 'id_menu';
+  protected $_name = 'maps';
+  protected $identityColumn = 'id_map';
   protected $view;
 
-  public function getMenu($site,$idPage,$contentsCount='',$menuBaseUrl,$activePage='') {
-    $this->view  = new Zend_View();
+  public function getMaps($site,$idPage,$contentsCount='',$maps) {
+
     $out = array();
-    $menu = $this->getAll(' WHERE `id_site` = '.$site['id_site'].' AND `menu_status` = 1 AND (`id_page` = '.$idPage.' OR `id_page` = 0)');
-    if($menu) {
-      $modelMenuItems = new Application_Model_DbTable_Menuitems();
+    if($maps) {
+      foreach($maps as $map) {
+        $mapContent = '<div class="map" id="map_'.$map['id_map'].'"></div>';
 
-      foreach($menu as $menuEntry) {
-        $menuContent = '';
-        if($menuEntry['menu_type'] == "main_menu") {
-          $menuItemsHirarchy = $modelMenuItems->getMenuitemsHierarchy(0,' `id_menu` = '.$menuEntry['id_menu'].' AND `menu_item_status` = 1');
-          $menuContent = $this->_getMainMenuItemsRecursiveList($menuItemsHirarchy,$site['site_slug'],$menuBaseUrl,0,$activePage);
-        } else if($menuEntry['menu_type'] == "footer_menu") {
-          $menuItems = $modelMenuItems->getAll(' WHERE `id_menu` = '.$menuEntry['id_menu'].' AND `menu_item_status` = 1');
-          $menuContent = $this->_getFooterMenuList($menuItems,$site['site_slug'],$menuBaseUrl);
-        }
-
-        $out[$contentsCount]['component_id'] = $menuEntry['component_id'];
-        $out[$contentsCount]['content_type'] = 'menu';
-        $out[$contentsCount]['content'] = $menuContent;
-        $out[$contentsCount++]['id_content'] = $menuEntry['id_menu'];
+        $out[$contentsCount]['component_id'] = $map['component_id'];
+        $out[$contentsCount]['content_type'] = 'map';
+        $out[$contentsCount]['content'] = $mapContent;
+        $out[$contentsCount++]['id_content'] = $map['id_map'];
       }
     }
 
     return $out;
-  }
-
-  public function _getFooterMenuList($menUItems,$siteSlug,$menuBaseUrl) {
-    $modelMenuItems = new Application_Model_DbTable_Menuitems();
-    $out = '';
-    if($menUItems) {
-      $out .= '<ul class="footer-menu">';
-        foreach ($menUItems as $item) {
-          $out .= '<li class="'.$defaultActiveClass.' '.$addOnClass.'">'; $defaultActiveClass = '';
-          $out .= $modelMenuItems->getMenuItemAnchor($item,$siteSlug,0,$menuBaseUrl);
-          $out .= '</li>';
-        }
-      $out .= '</ul>';
-    }
-    return $out;
-  }
-
-  public function _getMainMenuItemsRecursiveList($menUItems,$siteSlug,$menuBaseUrl,$isDropdownMenu=0,$activePage='') {
-    $modelMenuItems = new Application_Model_DbTable_Menuitems();
-    $out = '';
-    $mainItemClass = 'nav navbar-nav';
-    if($isDropdownMenu)  {
-      $mainItemClass = 'dropdown-menu';
-      //$out .= '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>';
-    }
-
-    $out .= '<ul class="'.$mainItemClass.'">';
-    if($menUItems) {
-
-      $addOnClass = '';
-      foreach($menUItems as $item) {
-        if($item['sub_menu']) $addOnClass = 'dropdown';
-
-        $defaultActiveClass = '';
-        if($activePage == $item['page_slug']) $defaultActiveClass = 'active';
-        $out .= '<li class="'.$defaultActiveClass.' '.$addOnClass.'">';
-
-        if($item['sub_menu']) $out .= '<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" href="">'.$item['title'].' <span class="caret"></span></a>';
-        else {
-          $out .= $modelMenuItems->getMenuItemAnchor($item,$siteSlug,0,$menuBaseUrl);
-        }
-
-        if(isset($item['sub_menu']) && $item['sub_menu']) $out .= $this->_getMainMenuItemsRecursiveList($item['sub_menu'],$siteSlug,$menuBaseUrl,1);
-
-        $out .= '</li>';
-      }
-      $out .= '</ul>';
-      return $out;
-
-    } else return false;
   }
 
   function isUnique($field,$value , $extra='') {

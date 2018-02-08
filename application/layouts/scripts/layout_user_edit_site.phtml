@@ -14,11 +14,33 @@ $addOnCss .= '<style>
 								.margin-bottom-100 {
 									margin-bottom:150px;
 								}
+								.pac-container{z-index:2000 !important;}
 							</style>';
 
 $addOnJs = '<script>
-							var baseUrl = "'.$this->baseUrl().'"
+							var baseUrl = "'.$this->baseUrl().'";
 						</script>';
+if(isset($this->maps) && $this->maps) {
+	$addOnJs .= '<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuUoQCfvO0FbZglOBVwuE0njAVrrdotos&callback=initMap&sensor=false&libraries=places"></script>';
+	$addOnJs .= "<script>";
+
+		$addOnJs .= "function initMap() { var zoomLevel = 8; ";
+			foreach($this->maps as $map) {
+				if(isset($map['zoom_level']) && $map['zoom_level'] ) $addOnJs .= " zoomLevel = ".$map['zoom_level'].";";
+				$addOnJs .= "map".$map['id_map']." = new google.maps.Map(document.getElementById('map_".$map['id_map']."'), {
+														  center: {lat: ".$map['latitude'].", lng: ".$map['longitude']."},
+														  zoom: zoomLevel
+														});
+
+														new google.maps.Marker({
+															position: {lat: ".$map['latitude'].", lng: ".$map['longitude']."},
+															map: map".$map['id_map']."
+														});
+														";
+			}
+		$addOnJs .= '}';
+	$addOnJs .= "</script>";
+}
 $addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/general_app.js"></script>';
 $addOnJs .= '<script src="'.$this->baseUrl().'/ui_site_editor/backoffice_theme_editor/jquery.nestable.js"></script>';
 $addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/dropzone/dropzone.js"></script>';
@@ -26,6 +48,85 @@ $addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/content_edito
 $addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/image_editor_app.js"></script>';
 $addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/slider_editor_app.js"></script>';
 $addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/menu_editor_app.js"></script>';
+$addOnJs .= '<script src="'.$this->baseUrl().'/ui_user_site_editor/map_editor_app.js"></script>';
+
+if(isset($this->maps) && $this->maps) {
+	foreach($this->maps as $map) {
+		$addOnContent .= '<input type="hidden" name="lat_map-'.$map['id_map'].'" id="lat_map-'.$map['id_map'].'" value="'.$map['latitude'].'" />';
+		$addOnContent .= '<input type="hidden" name="lng_map-'.$map['id_map'].'" id="lng_map-'.$map['id_map'].'" value="'.$map['longitude'].'" />';
+	}
+	$addOnContent .= '<input type="hidden" name="def_lat" id="def_lat" value="'.$map['latitude'].'" />';
+	$addOnContent .= '<input type="hidden" name="def_lng" id="def_lng" value="'.$map['longitude'].'" />';
+
+	$addOnContent .= '<div class="modal fade" id="mapModal"  role="dialog"  aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content margin-bottom-100">
+				<div class="modal-header">
+					<h4 class="modal-title">Select your location</h4>
+				</div>
+				<form method="post" action="" id="frmMap" >
+					<input type="hidden" name="id_map" id="id_map" value="" />
+					<div class="modal-body" >
+						<div class="row">
+							<div class="col-sm-6" >
+								<div class="form-group">
+									<label>Location </label>
+									<input name="us2-address" id="us2-address" class="form-control" type="text">
+								</div><!--  frm group -->
+							</div> <!-- col -->
+							<div class="col-sm-3" >
+								<div class="form-group">
+									<label>Lat. </label>
+									<input type="text" id="us2-lat" name="us2-lat" class="form-control" />
+								</div><!--  frm group -->
+							</div>
+							<div class="col-sm-3" >
+								<div class="form-group">
+									<label>Long. </label>
+									<input type="text" id="us2-lon" name="us2-lon" class="form-control" />
+								</div><!--  frm group -->
+							</div>
+
+						</div> <!-- row -->
+
+						<div class="row">
+							<div class="col-sm-12" >
+								<div id="us2" style="width: 100%; height: 300px;"></div>
+							</div> <!-- col -->
+						</div>
+					</div><!-- modal-body -->
+
+					<div class="modal-footer" id="map_modal_footer">
+						<div class="pull-left" id="update_map_status_cont"></div>
+						<button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+						<button type="button" class="btn btn-primary btn-sm" id="btn_save_map"><i class="fa fa-check"></i> Save Location</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>';
+
+	$addOnJs .= '<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuUoQCfvO0FbZglOBVwuE0njAVrrdotos&sensor=false&libraries=places"></script>
+								<script src="'.$this->baseUrl().'/ui_user_site_editor/location_picker/locationpicker.jquery.min.js"></script>
+								<script>
+									$("#mapModal").on("shown.bs.modal", function () {
+											$("#us2").locationpicker({
+													location: {
+															latitude: $("#def_lat").val(),
+															longitude: $("#def_lng").val()
+													},
+													radius: 300,
+													enableAutocomplete: true,
+													inputBinding: {
+															locationNameInput: $("#us2-address"),
+															latitudeInput: $("#us2-lat"),
+															longitudeInput: $("#us2-lon")
+													}
+											});
+											$("#us2").locationpicker("autosize");
+									});
+							</script>';
+}
 
 $addOnContent .= '<div class="modal fade " id="sliderModal"  role="dialog"  aria-hidden="true">
 	<div class="modal-dialog modal-lg">
@@ -256,7 +357,6 @@ if(isset($this->contents) && $this->contents) {
 						$placeHolderContent .= '</div>';
 						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
 																			<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$contentType.' btn bg-navy btn-xs btn_edit_text" ><i class="fa fa-edit"></i> Edit</button>
-																			<button id="btn_delete_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$contentType.' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
 																		</div>';
 						$placeHolderContent .= '<div class="btn-group save-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
 																			<button id="btn_save_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_save_content_'.$contentType.' btn bg-green btn-xs btn_save_text" ><i class="fa fa-save"></i> Save</button>
@@ -273,7 +373,6 @@ if(isset($this->contents) && $this->contents) {
 							$placeHolderContent .= '</div>';
 							$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
 																				<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$contentType.' btn bg-navy btn-xs btn_edit_image" ><i class="fa fa-edit"></i> Edit</button>
-																				<button id="btn_delete_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$contentType.' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
 																			</div>';
 							$placeHolderContent .= '<div class="btn-group save-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
 																				<button id="btn_changeimage_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn bg-aqua btn-xs btn_change_image" data-target="#galleryModal" data-toggle="modal" ><i class="fa fa-image"></i> New image</button>
@@ -290,7 +389,6 @@ if(isset($this->contents) && $this->contents) {
 						$placeHolderContent .= '</div>';
 						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
 																			<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$contentType.' btn bg-navy btn-xs btn_edit_slider" ><i class="fa fa-edit"></i> Edit</button>
-																			<button id="btn_delete_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$contentType.' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
 																		</div>';
 						$placeHolderContent .= '<div class="btn-group save-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
 																			<button id="btn_changeimage_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn bg-aqua btn-xs btn_change_slider_images" data-target="#sliderModal" data-toggle="modal" ><i class="fa fa-image"></i> Change Images</button>
@@ -305,7 +403,16 @@ if(isset($this->contents) && $this->contents) {
 						$placeHolderContent .= stripslashes($content['content']);
 						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
 																			<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_menu btn bg-navy btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> Edit</button>
-																			<button id="btn_delete-'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$content['content_type'].' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
+																		</div>';
+					$placeHolderContent .= '</div>';
+				break;
+			case 'map' :
+					$contentType = 'map';
+					if($content['content_type']) $contentType = $content['content_type'];
+					$placeHolderContent = '<div class="editable_update" >';
+						$placeHolderContent .= stripslashes($content['content']);
+						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$contentType.'-'.$content['id_content'].'">
+																			<button id="btn_edit_'.$contentType.'-'.$content['id_content'].'" type="button" class="btn_edit_content_map btn bg-navy btn-xs" data-toggle="modal" data-target="#mapModal"><i class="fa fa-edit"></i> Edit</button>
 																		</div>';
 					$placeHolderContent .= '</div>';
 				break;
@@ -314,7 +421,6 @@ if(isset($this->contents) && $this->contents) {
 						$placeHolderContent .= stripslashes($content['content']);
 						$placeHolderContent .= '<div class="btn-group edit-control" id="edit_cont_'.$content['content_type'].'_'.$content['id_content'].'">
 																			<button id="btn_edit_'.$content['content_type'].'-'.$content['id_content'].'" type="button" class="btn_edit_content_'.$content['content_type'].' btn bg-navy btn-xs" data-toggle="modal" data-target="#modal-edit"><i class="fa fa-edit"></i> Edit</button>
-																			<button id="btn_delete-'.$content['content_type'].'-'.$content['id_content'].'" type="button" class="btn_delete_content_'.$content['content_type'].' btn_delete_content btn bg-red btn-xs" data-toggle="modal" data-target="#modal-delete"><i class="fa fa-trash"></i> Delete</button>
 																		</div>';
 					$placeHolderContent .= '</div>';
 				break;

@@ -91,14 +91,14 @@ class User_EditSiteController extends Zend_Controller_Action {
     $contents = $modelContents->getAll(' WHERE `id_site` = '.$site['id_site'].' AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0)');
 
     // get sliders
-    $modelContents = new Application_Model_DbTable_Sliders();
-    $sliders = $modelContents->getSliders($site['id_site'],$page['id_page'],count($contents));
+    $modelSliders = new Application_Model_DbTable_Sliders();
+    $sliders = $modelSliders->getSliders($site['id_site'],$page['id_page'],count($contents));
     if($sliders) $contents = array_merge($contents,$sliders);
 
     // get menu
     $modelMenu = new Application_Model_DbTable_Menu();
     $menuBaseUrl = $this->view->baseUrl().'/user/edit-site/show-site';
-    $menu = $modelMenu->getMenu($site,$page['id_page'],count($contents),$menuBaseUrl);
+    $menu = $modelMenu->getMenu($site,$page['id_page'],count($contents),$menuBaseUrl,$page['page_slug']);
     if($menu) $contents = array_merge($contents,$menu);
 
     // get media
@@ -111,11 +111,18 @@ class User_EditSiteController extends Zend_Controller_Action {
     $forms = $modelForms->getForms($site['id_site'],$page['id_page'],count($contents));
     if($forms) $contents = array_merge($contents,$forms);
 
+    // get maps
+    $modelMaps = new Application_Model_DbTable_Maps();
+    $mapEntries = $modelMaps->getAll(' WHERE `id_site` = '.$site['id_site'].' AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0)');
+    $maps = $modelMaps->getMaps($site,$page['id_page'],count($contents),$mapEntries);
+    if($maps) $contents = array_merge($contents,$maps);
+
     // get all layouts of this theme
     $layoutFiles = glob($theme['directory'].$themeSlug."/*.phtml");
 
     // view assignments
     if(isset($site) && $site) $this->view->site = $site;
+    if(isset($mapEntries) && $mapEntries) $this->view->maps = $mapEntries;
     if(isset($page) && $page) $this->view->page = $page;
     if(isset($theme) && $theme) $this->view->theme = $theme;
     if(isset($contents) && $contents) $this->view->contents = $contents;

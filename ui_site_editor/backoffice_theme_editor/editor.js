@@ -128,8 +128,16 @@ function getInputForm(componentType) {
       break;
     case 'map':
         out += '<div class="form-group">';
-          out += '<label >Add map iFrame code</label>';
-          out += '<textarea name="content_input"  class="form-control"></textarea>';
+          out += '<label >Latitude</label>';
+          out += '<input type="text" name="latitude" id="latitude" class="form-control" placeholder="Latitude" />';
+        out += '</div>';
+        out += '<div class="form-group">';
+          out += '<label >Longitude</label>';
+          out += '<input type="text" name="longitude" id="longitude" class="form-control" placeholder="Longitude" />';
+        out += '</div>';
+        out += '<div class="form-group">';
+          out += '<label >Zoom Level</label>';
+          out += '<input type="text" name="zoom_level" id="zoom_level" class="form-control" placeholder="Zoom Level" />';
         out += '</div>';
         break;
     case 'html':
@@ -143,7 +151,6 @@ function getInputForm(componentType) {
         out += '<div class="col-sm-4">';
           out += '<div class="form-group">';
             out += '<input type="text" name="form_name" id="form_name" class="form-control" placeholder="Form Name" />';
-            out += '</select>';
           out += '</div>';
         out += '</div>'; // col 6
 

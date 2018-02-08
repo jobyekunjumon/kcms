@@ -422,7 +422,7 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
         $componentType = 'text';
         if(isset($post['component_type']) && $post['component_type']) $componentType = $post['component_type'];
 
-        if($componentType == 'text' || $componentType == 'html' || $componentType == 'map') {
+        if($componentType == 'text' || $componentType == 'html') {
           if(!isset($post['content_input']) || !$post['content_input'] ) exit('Component data not found. Please go back and try again.');
           $modelContents = new Application_Model_DbTable_Composer();
           $modelContents->setTableName('contents');
@@ -441,6 +441,32 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
             $this->_redirect('/backoffice/themes/edit-theme-site?name='.$site['site_slug'].'&page='.$page['page_slug']);
           } else {
             exit('Something went wrong while adding content. Please go back and try again.');
+          }
+        } else if($componentType == 'map') {
+          // validate input
+          $validationErrors = $this->_validateMapCreation($post);
+          if($validationErrors) {
+            echo 'You have some validation errors. Please fix the following errors. Go back, make the changes and submit again.';
+            foreach($validationErrors as $error) {
+              echo '<br>*'.$error;
+            }
+            exit;
+          } else {
+            $modelMaps = new Application_Model_DbTable_Maps();
+            $idPage = 0; $zoomLevel = 8;
+            if(isset($post['page_specific']) && $post['page_specific']) $idPage = $page['id_page'];
+            if(isset($post['zoom_level']) && $post['zoom_level'] && is_numeric($post['zoom_level'])) $zoomLevel = $post['zoom_level'];
+            $newMap = array( 'id_site' => $site['id_site'],
+                              'id_page' => $idPage,
+                              'component_id' => $post['component_id'].';',
+                              'latitude' => $post['latitude'],
+                              'longitude' => $post['longitude'],
+                              'zoom_level' => $zoomLevel,
+                              'map_type' => '',
+                             );
+            if($mapId = $modelMaps->insertData($newMap)) {
+              $this->_redirect('/backoffice/themes/edit-theme-site?name='.$site['site_slug'].'&page='.$page['page_slug']);
+            }
           }
         } else if($componentType == 'menu') {
           // validate input
@@ -833,9 +859,15 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
       }
     }
 
-    //$this->utilities->debug($site);$this->utilities->debug($page);$this->utilities->debug($contents); exit();
+    // get maps
+    $modelMaps = new Application_Model_DbTable_Maps();
+    $mapEntries = $modelMaps->getAll(' WHERE `id_site` = '.$site['id_site'].' AND (`id_page` = '.$page['id_page'].' OR `id_page` = 0)');
+    $maps = $modelMaps->getMaps($site,$page['id_page'],count($contents),$mapEntries);
+    if($maps) $contents = array_merge($contents,$maps);
+    //$this->utilities->debug($maps);$this->utilities->debug($site);$this->utilities->debug($contents); exit();
 
     if(isset($site) && $site) $this->view->site = $site;
+    if(isset($mapEntries) && $mapEntries) $this->view->maps = $mapEntries;
     if(isset($page) && $page) $this->view->page = $page;
     if(isset($pages) && $pages) $this->view->pages = $pages;
     if(isset($theme) && $theme) $this->view->theme = $theme;
@@ -1509,6 +1541,13 @@ class Backoffice_ThemesController extends Zend_Controller_Action {
     if(!isset($post['title']) || !$post['title']) $errors['title'] = 'Please enter a menu item title.';
     if(!isset($post['link_type']) || !$post['link_type']) $errors['link_type'] = 'Please select a link type.';
     if(!isset($post['link_type_attribute']) || !$post['link_type_attribute']) $errors['link_type_attribute'] = 'Please enter link item target.';
+    return $errors;
+  }
+
+  public function _validateMapCreation($post) {
+    $errors = array();
+    if(!isset($post['latitude']) || !$post['latitude']) $errors['latitude'] = 'No Latitude found.';
+    if(!isset($post['longitude']) || !$post['longitude']) $errors['longitude'] = 'No Longitude found.';
     return $errors;
   }
 

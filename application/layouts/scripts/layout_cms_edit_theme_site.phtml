@@ -31,6 +31,28 @@ $addOnJs .= "<script>
 </script>
 ";
 
+if(isset($this->maps) && $this->maps) {
+	$addOnJs .= '<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuUoQCfvO0FbZglOBVwuE0njAVrrdotos&callback=initMap"></script>';
+	$addOnJs .= "<script>";
+
+		$addOnJs .= "function initMap() { var zoomLevel = 8; ";
+			foreach($this->maps as $map) {
+				if(isset($map['zoom_level']) && $map['zoom_level'] ) $addOnJs .= " zoomLevel = ".$map['zoom_level']."; ";
+				$addOnJs .= "map".$map['id_map']." = new google.maps.Map(document.getElementById('map_".$map['id_map']."'), {
+														  center: {lat: ".$map['latitude'].", lng: ".$map['longitude']."},
+														  zoom: zoomLevel
+														});
+
+														new google.maps.Marker({
+															position: {lat: ".$map['latitude'].", lng: ".$map['longitude']."},
+															map: map".$map['id_map']."
+														});
+														";
+			}
+		$addOnJs .= '}';
+	$addOnJs .= "</script>";
+}
+
 $addOnContent =  '<div class="modal fade" id="modal-add">
 										<div id="modal_add_content" class="modal-dialog ">
 											<div class="modal-content">

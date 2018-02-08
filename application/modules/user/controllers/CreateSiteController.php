@@ -321,6 +321,24 @@ class User_CreateSiteController extends Zend_Controller_Action {
       }
     }
 
+    // get theme site forms
+    $modelMaps = new Application_Model_DbTable_Maps();
+    $themeMaps = $modelMaps->getAll(' WHERE `id_site` = '.$idThemeSite);
+    if($themeMaps) {
+      foreach ($themeMaps as  $map) {
+        $newMap = array( 'id_site' => $idSite,
+                          'id_page' => 0,
+                          'component_id' => $map['component_id'],
+                          'map_vendor' => $map['map_vendor'],
+                          'latitude' => $map['latitude'],
+                          'longitude' => $map['longitude'],
+                          'zoom_level' => $map['zoom_level'],
+                          'map_type' => $map['map_type']
+                        );
+        @$modelMaps->insertData($newMap);
+      }
+    }
+
     return true;
 
   }
